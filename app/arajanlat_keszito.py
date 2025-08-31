@@ -1,7 +1,9 @@
+import app.szabasjegyzek_szerkeszto as szabjegy
 import app.adatgyujto as adatgyujto
 
 class Arajanlat:
-    def __init__(self, wb, vezetek_nev, kereszt_nev):
+    def __init__(self, df, wb, vezetek_nev, kereszt_nev):
+        self.df = df
         self.wb = wb
         self.ws = wb['arajanlat']
         self.vezetek_nev = vezetek_nev
@@ -22,3 +24,16 @@ class Arajanlat:
             self.ws["F6"] = email
             self.ws["F7"] = cim
 
+    def anyagok(self):
+        anyagjegyzek = szabjegy.SzabasjegyzekSzerkeszto(self.df).anyagigeny_szamitasa()
+        sor = 12
+        for _, row in anyagjegyzek.iterrows():
+            self.ws.insert_rows(sor)
+            self.ws.cell(row=sor, column=1, value=sor - 11)
+            self.ws.cell(row=sor, column=2, value=row.get("Anyag", ""))
+            self.ws.cell(row=sor, column=4, value=row.get("Szin", ""))
+            self.ws.cell(row=sor, column=5, value=row.get("Menyiseg", ""))
+            self.ws.cell(row=sor, column=6, value=row.get("Mértékegység", ""))
+            self.ws.cell(row=sor, column=7, value=0)
+            self.ws.cell(row=sor, column=8, value=0)
+            sor += 1

@@ -1,4 +1,5 @@
 import pandas as pd
+import app.faj_beolvaso_kiirato as faj
 
 class SzabasjegyzekSzerkeszto:
     def __init__(self, df):
@@ -42,7 +43,8 @@ class SzabasjegyzekSzerkeszto:
         for col in ["Hosz", "Szel", "Vas"]:
             self.df[col] = self.df[col].str.replace("mm", "", regex=False).str.strip().astype(int)
 
-    def terulet_terfogat_szamitas(self):
+    def hosz_terulet_terfogat_szamitas(self):
+        self.df["Osz_Hosz"] = self.df["DB"] * self.df["Hosz"] / 1000
         self.df["Terulet"] = self.df["DB"] * self.df["Hosz"] * self.df["Szel"] / 1000000
         self.df["Terfogat"] = self.df["DB"] * self.df["Hosz"] * self.df["Szel"] * self.df["Vas"] / 1000000000
 
@@ -62,7 +64,58 @@ class SzabasjegyzekSzerkeszto:
         self.azonos_sorok_szurese()
         self.sorszam_hozzaadasa()
         self.mm_eltavolitasa()
-        self.terulet_terfogat_szamitas()
-        self.elzaras_szamitas()
 
         return self.df
+
+    def anyagigeny_szamitasa(self):
+        # Beolvasás
+        anyagtip = faj.BeolvasKiirat().csv_beolvasasa_databol("anyagtipusok.csv")
+
+        # Feldolgozott szabásjegyzék
+        self.df = self.szabasjegyzek_szerkeszto()
+        self.hosz_terulet_terfogat_szamitas()
+        self.elzaras_szamitas()
+
+        # Osszegzés anyag és szín szerint
+        osszegzes = self.df.groupby(["Anyag", "Szin"], as_index=False, dropna=False)[
+            ["Osz_Hosz", "Terulet", "Terfogat", "Vekonyelzaro", "Vastagelzaro"]
+        ].sum()
+        print(osszegzes)
+
+        # Csak az adott anyaghoz tartozó elszámolási alapot hagyjuk meg
+        eredmeny_list = []
+
+        for _, row in osszegzes.iterrows():
+            anyag = row["Anyag"]
+            szin = row["Szin"]
+            alap = anyagtip.loc[anyagtip["Anyag"] == anyag, "Szamitasialap"].values
+            if len(alap) == 0:
+                continue  # ha nincs meghatározva, kihagyjuk
+            alap = alap[0]  # pl. "Terulet" vagy "Terfogat"
+
+            # Kiválasztjuk az adott alaphoz tartozó oszlopot
+            ertek = row.get(alap, 0)
+
+            mertekegyseg_dict = {
+                "Hosz": "m",
+                "Terulet": "m²",
+                "Terfogat": "m³",
+                "Vekonyelzaro": "m",
+                "Vastagelzaro": "m"
+            }
+            mertekegyseg = mertekegyseg_dict.get(alap, "")
+            # Hozzáadjuk az eredmény listához, opcionálisan mértékegységgel
+            eredmeny_list.append({
+                "Anyag": anyag,
+                "Szin": szin,
+                "Menyiseg": ertek,
+                "Mértékegység": mertekegyseg
+            })
+
+        # Új DataFrame az anyagonkénti elszámolásra
+        df_eredmeny = pd.DataFrame(eredmeny_list)
+        print(df_eredmeny)
+
+        return df_eredmeny
+
+

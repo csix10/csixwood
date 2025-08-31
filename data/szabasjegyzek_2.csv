@@ -1,0 +1,9 @@
+﻿No.;Designation;Quantity;Length - raw;Width - raw;Thickness - raw;Length;Width;Thickness;Area - final;Type;Material;Material description;URL of the material;Instance names;Description;URL;Badges;Edge Length 1;Edge Length 2;Edge Width 1;Edge Width 2;Frontside;Backside;Tags
+A;Alja/Teteje;1;1174 mm;230 mm;18 mm;1174 mm;230 mm;18 mm;;Undefined;617FS08;;;;A;;butorlap;;;;;;;Layer0
+B;Alja/Teteje#1;1;1174 mm;230 mm;18 mm;1174 mm;230 mm;18 mm;;Undefined;617FS08;;;;A;;butorlap;;;;;;;Layer0
+C;Oldal;2;600 mm;230 mm;18 mm;600 mm;230 mm;18 mm;;Undefined;617FS08;;;;Abb;;butorlap;;;;;;;Layer0
+D;Elvalaszto;2;564 mm;230 mm;18 mm;564 mm;230 mm;18 mm;;Undefined;617FS08;;;;A;;butorlap;;;;;;;Layer0
+E;Polc;3;344 mm;226 mm;18 mm;344 mm;226 mm;18 mm;;Undefined;617FS08;;;;A;;butorlap;;;;;;;Layer0
+F;Polc;1;226 mm;194 mm;18 mm;226 mm;194 mm;18 mm;;Undefined;617FS08;;;;A;;butorlap;;;;;;;Layer0
+A;Hátlap;1;590 mm;370 mm;4 mm;590 mm;370 mm;4 mm;;Undefined;feher;;;;;;HDF;;;;;;;Layer0
+B;Hátlap;1;590 mm;220 mm;4 mm;590 mm;220 mm;4 mm;;Undefined;feher;;;;;;HDF;;;;;;;Layer0
