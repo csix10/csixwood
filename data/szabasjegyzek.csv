@@ -1,0 +1,132 @@
+﻿No.;Designation;Quantity;Length - raw;Width - raw;Thickness - raw;Length;Width;Thickness;Area - final;Type;Material;Material description;URL of the material;Instance names;Description;URL;Badges;Edge Length 1;Edge Length 2;Edge Width 1;Edge Width 2;Frontside;Backside;Tags
+A;4-TABLE DE CUISSON CLC2;1;595 mm;510 mm;28 mm;595 mm;510 mm;28 mm;"";Undefined;CLC2-COOKTOP-ACIER NOIR2;"";"";"";"";"";"";"";"";"";"";"";"";Layer0
+A;8-PRODUITS CUISINE CLC2;1;175 mm;46 mm;46 mm;175 mm;46 mm;46 mm;"";Undefined;CLC2-DECO-10-BOUTEIL;"";"";"";"";"";"";"";"";"";"";"";"";Layer0
+A;9-PRODUITS CUISINE CLC2;1;176 mm;56 mm;56 mm;176 mm;56 mm;56 mm;"";Undefined;CLC2-DECO-11-BOUTEIL;"";"";"";"";"";"";"";"";"";"";"";"";Layer0
+A;12-PRODUITS CUISINE CLC2;1;137 mm;55 mm;55 mm;137 mm;55 mm;55 mm;"";Undefined;CLC2-DECO-12-BOUTEIL;"";"";"";"";"";"";"";"";"";"";"";"";Layer0
+A;13-PRODUITS CUISINE CLC2;1;100 mm;100 mm;100 mm;100 mm;100 mm;100 mm;"";Undefined;CLC2-DECO-14-BOUTEIL;"";"";"";"";"";"";"";"";"";"";"";"";Layer0
+A;15-PRODUITS CUISINE CLC2;1;140 mm;100 mm;100 mm;140 mm;100 mm;100 mm;"";Undefined;CLC2-DECO-18-BOUTEIL;"";"";"";"";"";"";"";"";"";"";"";"";Layer0
+A;10-PRODUITS CUISINE CLC2;1;240 mm;240 mm;120 mm;240 mm;240 mm;120 mm;"";Undefined;CLC2-DECO-19-BOUTEIL;"";"";"";"";"";"";"";"";"";"";"";"";Layer0
+A;6-PRODUITS CUISINE CLC2#1;1;205 mm;56 mm;56 mm;205 mm;56 mm;56 mm;"";Undefined;CLC2-DECO-7-BOUTEIL;"";"";"";"";"";"";"";"";"";"";"";"";Layer0
+A;7-PRODUITS CUISINE CLC2;1;135 mm;96 mm;96 mm;135 mm;96 mm;96 mm;"";Undefined;CLC2-DECO-8-BOUTEIL;"";"";"";"";"";"";"";"";"";"";"";"";Layer0
+A;11-PRODUITS CUISINE CLC2;1;156 mm;75 mm;75 mm;156 mm;75 mm;75 mm;"";Undefined;CLC2-DECO-9-BOUTEIL;"";"";"";"";"";"";"";"";"";"";"";"";Layer0
+A;6-EVIER M60 CLC2;1;960 mm;500 mm;162 mm;960 mm;500 mm;162 mm;"";Undefined;CLC2-EVIER-74394_PE191379_S5;"";"";"";"";"";"";"";"";"";"";"";"";Layer0
+A;1-ROBINET CLC2;1;360 mm;180 mm;118 mm;360 mm;180 mm;118 mm;"";Undefined;CLC2-EVIER-ROBINET INOX;"";"";"";"";"";"";"";"";"";"";"";"";Layer0
+A;CLC2-Fruit - Banana;2;251 mm;106 mm;47 mm;251 mm;106 mm;47 mm;"";Undefined;CLC2-FRUITS-Fruit - Banana - Body;"";"";"";"";"";"";"";"";"";"";"";"";Layer0
+A;CLC2-Fruit - Green Apple;1;109 mm;107 mm;93 mm;109 mm;107 mm;93 mm;"";Undefined;CLC2-FRUITS-Fruit - Green Apple Body;"";"";"";"";"";"";"";"";"";"";"";"";Layer0
+A;CLC2-Fruit - Orange;2;93 mm;93 mm;93 mm;93 mm;93 mm;93 mm;"";Undefined;CLC2-FRUITS-Fruit - Orange - Body;"";"";"";"";"";"";"";"";"";"";"";"";Layer0
+A;CLC2-Fruit - Red Apple;1;99 mm;93 mm;93 mm;99 mm;93 mm;93 mm;"";Undefined;CLC2-FRUITS-Fruit - Red Apple - Body;"";"";"";"";"";"";"";"";"";"";"";"";Layer0
+B;CLC2-Fruit - Red Apple;1;99 mm;93 mm;93 mm;99 mm;93 mm;93 mm;"";Undefined;CLC2-FRUITS-Fruit - Red Apple - Body;"";"";"";"";"";"";"";"";"";"";"";"";Layer0
+A;CLC2-Basket - Dish;1;308 mm;308 mm;63 mm;308 mm;308 mm;63 mm;"";Undefined;CLC2-FRUITS-Wicker Rough;"";"";"";"";"";"";"";"";"";"";"";"";Layer0
+A;3-POIGNEE CLC2;19;245 mm;41 mm;13 mm;245 mm;41 mm;13 mm;"";Undefined;CLC2-HANDLES-BT - LANSA;"";"";"";"";"";"";"";"";"";"";"";"";Layer0
+B;3-POIGNEE CLC2;11;245 mm;41 mm;13 mm;245 mm;41 mm;13 mm;"";Undefined;CLC2-HANDLES-BT - LANSA;"";"";"";"";"";"";"";"";"";"";"";"";Layer0
+A;munkalap;1;1570 mm;600 mm;38 mm;1570 mm;600 mm;38 mm;"";Undefined;grey galaxy;"";"";"";grey galaxy;"";"";"";"";"";"";"";"";Layer0
+B;Munkalap_2;1;1530 mm;600 mm;38 mm;1530 mm;600 mm;38 mm;"";Undefined;grey galaxy;"";"";"";"";"";"";"";"";"";"";"";"";Layer0
+C;munkalap;1;1461 mm;600 mm;38 mm;1461 mm;600 mm;38 mm;"";Undefined;grey galaxy;"";"";"";grey galaxy;"";"";"";"";"";"";"";"";Layer0
+A;Torony/Oldal;2;2280 mm;560 mm;18 mm;2280 mm;560 mm;18 mm;"";Undefined;kobalt szurke;"";"";"";Ab;"";"";"";"";"";"";"";"";Layer0
+B;Alsó/Sarokalj;1;1100 mm;1100 mm;18 mm;1100 mm;1100 mm;18 mm;"";Undefined;kobalt szurke;"";"";"";ab;"";"";"";"";"";"";"";"";Layer0
+C;Alsó/Sarokhátfal;1;1082 mm;702 mm;18 mm;1082 mm;702 mm;18 mm;"";Undefined;kobalt szurke;"";"";"";"";"";"";"";"";"";"";"";"";Layer0
+D;Also/összekötő;2;1064 mm;100 mm;18 mm;1064 mm;100 mm;18 mm;"";Undefined;kobalt szurke;"";"";"";A;"";"";"";"";"";"";"";"";Layer0
+E;Felső1/Oldal;1;990 mm;320 mm;18 mm;990 mm;320 mm;18 mm;"";Undefined;kobalt szurke;"";"";"";Abb;"";"";"";"";"";"";"";"";Layer0
+F;Felső1/Oldal;1;990 mm;320 mm;18 mm;990 mm;320 mm;18 mm;"";Undefined;kobalt szurke;"";"";"";Abb;"";"";"";"";"";"";"";"";Layer0
+G;Felső1/Oldal;1;990 mm;302 mm;18 mm;990 mm;302 mm;18 mm;"";Undefined;kobalt szurke;"";"";"";Abb;"";"";"";"";"";"";"";"";Layer0
+H;Felső1/Oldal;1;990 mm;302 mm;18 mm;990 mm;302 mm;18 mm;"";Undefined;kobalt szurke;"";"";"";Abb;"";"";"";"";"";"";"";"";Layer0
+I;Alsó/oldal;12;702 mm;560 mm;18 mm;702 mm;560 mm;18 mm;"";Undefined;kobalt szurke;"";"";"";A;"";"";"";"";"";"";"";"";Layer0
+J;Alsó/oldal;2;702 mm;560 mm;18 mm;702 mm;560 mm;18 mm;"";Undefined;kobalt szurke;"";"";"";A;"";"";"";"";"";"";"";"";Layer0
+K;Felső1/Oldal;10;660 mm;320 mm;18 mm;660 mm;320 mm;18 mm;"";Undefined;kobalt szurke;"";"";"";Abb;"";"";"";"";"";"";"";"";Layer0
+L;Also/Alja;1;610 mm;560 mm;18 mm;610 mm;560 mm;18 mm;"";Undefined;kobalt szurke;"";"";"";Abb;"";"";"";"";"";"";"";"";Layer0
+M;Also/Alja;3;600 mm;560 mm;18 mm;600 mm;560 mm;18 mm;"";Undefined;kobalt szurke;"";"";"";Abb;"";"";"";"";"";"";"";"";Layer0
+N;Also/Alja;3;600 mm;560 mm;18 mm;600 mm;560 mm;18 mm;"";Undefined;kobalt szurke;"";"";"";Abb;"";"";"";"";"";"";"";"";Layer0
+O;Felső1/Alja;1;574 mm;546 mm;18 mm;574 mm;546 mm;18 mm;"";Undefined;kobalt szurke;"";"";"";A;"";"";"";"";"";"";"";"";Layer0
+P;Felső1/Alja;1;574 mm;320 mm;18 mm;574 mm;320 mm;18 mm;"";Undefined;kobalt szurke;"";"";"";A;"";"";"";"";"";"";"";"";Layer0
+Q;Felső1/Teteje;2;574 mm;306 mm;18 mm;574 mm;306 mm;18 mm;"";Undefined;kobalt szurke;"";"";"";A;"";"";"";"";"";"";"";"";Layer0
+R;Felső1/Teteje;1;574 mm;286 mm;18 mm;574 mm;286 mm;18 mm;"";Undefined;kobalt szurke;"";"";"";A;"";"";"";"";"";"";"";"";Layer0
+S;Alsó/polc;1;564 mm;560 mm;18 mm;564 mm;560 mm;18 mm;"";Undefined;kobalt szurke;"";"";"";A;"";"";"";"";"";"";"";"";Layer0
+T;Felső1/Alja;1;564 mm;560 mm;18 mm;564 mm;560 mm;18 mm;"";Undefined;kobalt szurke;"";"";"";A;"";"";"";"";"";"";"";"";Layer0
+U;Felső1/Alja;2;564 mm;546 mm;18 mm;564 mm;546 mm;18 mm;"";Undefined;kobalt szurke;"";"";"";A;"";"";"";"";"";"";"";"";Layer0
+V;Felső1/Alja;1;564 mm;546 mm;18 mm;564 mm;546 mm;18 mm;"";Undefined;kobalt szurke;"";"";"";A;"";"";"";"";"";"";"";"";Layer0
+W;Felső1/Alja;4;564 mm;515 mm;18 mm;564 mm;515 mm;18 mm;"";Undefined;kobalt szurke;"";"";"";A;"";"";"";"";"";"";"";"";Layer0
+X;Felső1/Alja;3;564 mm;320 mm;18 mm;564 mm;320 mm;18 mm;"";Undefined;kobalt szurke;"";"";"";A;"";"";"";"";"";"";"";"";Layer0
+Y;Felső1/Teteje;6;564 mm;306 mm;18 mm;564 mm;306 mm;18 mm;"";Undefined;kobalt szurke;"";"";"";A;"";"";"";"";"";"";"";"";Layer0
+Z;Felső1/Teteje;1;564 mm;286 mm;18 mm;564 mm;286 mm;18 mm;"";Undefined;kobalt szurke;"";"";"";A;"";"";"";"";"";"";"";"";Layer0
+AA;Felső1/Teteje;1;564 mm;284 mm;18 mm;564 mm;284 mm;18 mm;"";Undefined;kobalt szurke;"";"";"";A;"";"";"";"";"";"";"";"";Layer0
+AB;Also/összekötő;2;564 mm;100 mm;18 mm;564 mm;100 mm;18 mm;"";Undefined;kobalt szurke;"";"";"";A;"";"";"";"";"";"";"";"";Layer0
+AC;Also/összekötő;2;564 mm;100 mm;18 mm;564 mm;100 mm;18 mm;"";Undefined;kobalt szurke;"";"";"";A;"";"";"";"";"";"";"";"";Layer0
+AD;Also/Alja;1;560 mm;500 mm;18 mm;560 mm;500 mm;18 mm;"";Undefined;kobalt szurke;"";"";"";Abb;"";"";"";"";"";"";"";"";Layer0
+AE;Also/Alja;1;560 mm;460 mm;18 mm;560 mm;460 mm;18 mm;"";Undefined;kobalt szurke;"";"";"";Abb;"";"";"";"";"";"";"";"";Layer0
+AF;Also/Alja;1;560 mm;420 mm;18 mm;560 mm;420 mm;18 mm;"";Undefined;kobalt szurke;"";"";"";Abb;"";"";"";"";"";"";"";"";Layer0
+AG;Also/Alja;1;560 mm;351 mm;18 mm;560 mm;351 mm;18 mm;"";Undefined;kobalt szurke;"";"";"";Abb;"";"";"";"";"";"";"";"";Layer0
+AH;Also/Alja;1;560 mm;351 mm;18 mm;560 mm;351 mm;18 mm;"";Undefined;kobalt szurke;"";"";"";Abb;"";"";"";"";"";"";"";"";Layer0
+AI;Felso2/Oldal;6;560 mm;312 mm;18 mm;560 mm;312 mm;18 mm;"";Undefined;kobalt szurke;"";"";"";aB;"";"";"";"";"";"";"";"";Layer0
+AJ;Felso2/Oldal;4;560 mm;312 mm;18 mm;560 mm;312 mm;18 mm;"";Undefined;kobalt szurke;"";"";"";aB;"";"";"";"";"";"";"";"";Layer0
+AK;Felső1/Alja;1;546 mm;315 mm;18 mm;546 mm;315 mm;18 mm;"";Undefined;kobalt szurke;"";"";"";A;"";"";"";"";"";"";"";"";Layer0
+AL;Alsó/polc;1;540 mm;315 mm;18 mm;540 mm;315 mm;18 mm;"";Undefined;kobalt szurke;"";"";"";A;"";"";"";"";"";"";"";"";Layer0
+AM;Also/összekötő;2;522 mm;100 mm;18 mm;522 mm;100 mm;18 mm;"";Undefined;kobalt szurke;"";"";"";A;"";"";"";"";"";"";"";"";Layer0
+AN;Also/összekötő;2;464 mm;100 mm;18 mm;464 mm;100 mm;18 mm;"";Undefined;kobalt szurke;"";"";"";A;"";"";"";"";"";"";"";"";Layer0
+AO;Also/összekötő;2;424 mm;100 mm;18 mm;424 mm;100 mm;18 mm;"";Undefined;kobalt szurke;"";"";"";A;"";"";"";"";"";"";"";"";Layer0
+AP;Also/összekötő;2;384 mm;100 mm;18 mm;384 mm;100 mm;18 mm;"";Undefined;kobalt szurke;"";"";"";A;"";"";"";"";"";"";"";"";Layer0
+AQ;Felső1/Alja;1;320 mm;315 mm;18 mm;320 mm;315 mm;18 mm;"";Undefined;kobalt szurke;"";"";"";A;"";"";"";"";"";"";"";"";Layer0
+AR;Felső1/Teteje;2;315 mm;306 mm;18 mm;315 mm;306 mm;18 mm;"";Undefined;kobalt szurke;"";"";"";A;"";"";"";"";"";"";"";"";Layer0
+AS;Felső1/Teteje;1;315 mm;286 mm;18 mm;315 mm;286 mm;18 mm;"";Undefined;kobalt szurke;"";"";"";A;"";"";"";"";"";"";"";"";Layer0
+AT;Also/összekötő;2;315 mm;100 mm;18 mm;315 mm;100 mm;18 mm;"";Undefined;kobalt szurke;"";"";"";A;"";"";"";"";"";"";"";"";Layer0
+AU;Spec polc;5;300 mm;300 mm;18 mm;300 mm;300 mm;18 mm;"";Undefined;kobalt szurke;"";"";"";AB;"";"";"";"";"";"";"";"";Layer0
+AV;Spec polc;5;300 mm;300 mm;18 mm;300 mm;300 mm;18 mm;"";Undefined;kobalt szurke;"";"";"";AB;"";"";"";"";"";"";"";"";Layer0
+A;Ajto vizszintes elem;6;716 mm;60 mm;18 mm;716 mm;60 mm;18 mm;"";Undefined;natur_primavera_tolgy;"";"";"";"";"";"";"";"";"";"";"";"";Layer0
+B;Ajto vizszintes elem;6;716 mm;60 mm;18 mm;716 mm;60 mm;18 mm;"";Undefined;natur_primavera_tolgy;"";"";"";"";"";"";"";"";"";"";"";"";Layer0
+C;Ajto vizszintes elem;1;547 mm;60 mm;18 mm;547 mm;60 mm;18 mm;"";Undefined;natur_primavera_tolgy;"";"";"";"";"";"";"";"";"";"";"";"";Layer0
+D;Ajto vizszintes elem;1;547 mm;60 mm;18 mm;547 mm;60 mm;18 mm;"";Undefined;natur_primavera_tolgy;"";"";"";"";"";"";"";"";"";"";"";"";Layer0
+E;Ajtó keret vizszintes elem;3;506 mm;60 mm;18 mm;506 mm;60 mm;18 mm;"";Undefined;natur_primavera_tolgy;"";"";"";"";"";"";"";"";"";"";"";"";Layer0
+F;Ajtó keret vizszintes elem;3;506 mm;60 mm;18 mm;506 mm;60 mm;18 mm;"";Undefined;natur_primavera_tolgy;"";"";"";"";"";"";"";"";"";"";"";"";Layer0
+G;Ajtó keret vizszintes elem;14;496 mm;60 mm;18 mm;496 mm;60 mm;18 mm;"";Undefined;natur_primavera_tolgy;"";"";"";"";"";"";"";"";"";"";"";"";Layer0
+H;Ajtó keret vizszintes elem;14;496 mm;60 mm;18 mm;496 mm;60 mm;18 mm;"";Undefined;natur_primavera_tolgy;"";"";"";"";"";"";"";"";"";"";"";"";Layer0
+I;Ajtó keret vizszintes elem;1;436 mm;60 mm;18 mm;436 mm;60 mm;18 mm;"";Undefined;natur_primavera_tolgy;"";"";"";"";"";"";"";"";"";"";"";"";Layer0
+J;Ajtó keret vizszintes elem;1;436 mm;60 mm;18 mm;436 mm;60 mm;18 mm;"";Undefined;natur_primavera_tolgy;"";"";"";"";"";"";"";"";"";"";"";"";Layer0
+K;Ajtó keret vizszintes elem;1;416 mm;60 mm;18 mm;416 mm;60 mm;18 mm;"";Undefined;natur_primavera_tolgy;"";"";"";"";"";"";"";"";"";"";"";"";Layer0
+L;Ajtó keret vizszintes elem;1;416 mm;60 mm;18 mm;416 mm;60 mm;18 mm;"";Undefined;natur_primavera_tolgy;"";"";"";"";"";"";"";"";"";"";"";"";Layer0
+M;Ajto vizszintes elem;1;414 mm;60 mm;18 mm;414 mm;60 mm;18 mm;"";Undefined;natur_primavera_tolgy;"";"";"";"";"";"";"";"";"";"";"";"";Layer0
+N;Ajto vizszintes elem;1;414 mm;60 mm;18 mm;414 mm;60 mm;18 mm;"";Undefined;natur_primavera_tolgy;"";"";"";"";"";"";"";"";"";"";"";"";Layer0
+O;Ajtó keret vizszintes elem;1;396 mm;60 mm;18 mm;396 mm;60 mm;18 mm;"";Undefined;natur_primavera_tolgy;"";"";"";"";"";"";"";"";"";"";"";"";Layer0
+P;Ajtó keret vizszintes elem;1;396 mm;60 mm;18 mm;396 mm;60 mm;18 mm;"";Undefined;natur_primavera_tolgy;"";"";"";"";"";"";"";"";"";"";"";"";Layer0
+Q;Ajto keret fiók vízszintes;4;356 mm;40 mm;18 mm;356 mm;40 mm;18 mm;"";Undefined;natur_primavera_tolgy;"";"";"";"";"";"";"";"";"";"";"";"";Layer0
+R;Ajto keret fiók vízszintes;4;356 mm;40 mm;18 mm;356 mm;40 mm;18 mm;"";Undefined;natur_primavera_tolgy;"";"";"";"";"";"";"";"";"";"";"";"";Layer0
+S;Ajto vizszintes elem;16;326 mm;60 mm;18 mm;326 mm;60 mm;18 mm;"";Undefined;natur_primavera_tolgy;"";"";"";"";"";"";"";"";"";"";"";"";Layer0
+T;Ajto vizszintes elem;16;326 mm;60 mm;18 mm;326 mm;60 mm;18 mm;"";Undefined;natur_primavera_tolgy;"";"";"";"";"";"";"";"";"";"";"";"";Layer0
+U;Ajto keret fiók vízszintes;3;316 mm;40 mm;18 mm;316 mm;40 mm;18 mm;"";Undefined;natur_primavera_tolgy;"";"";"";"";"";"";"";"";"";"";"";"";Layer0
+V;Ajto keret fiók vízszintes;3;316 mm;40 mm;18 mm;316 mm;40 mm;18 mm;"";Undefined;natur_primavera_tolgy;"";"";"";"";"";"";"";"";"";"";"";"";Layer0
+W;Ajto vizszintes elem;1;296 mm;60 mm;18 mm;296 mm;60 mm;18 mm;"";Undefined;natur_primavera_tolgy;"";"";"";"";"";"";"";"";"";"";"";"";Layer0
+X;Ajto vizszintes elem;1;296 mm;60 mm;18 mm;296 mm;60 mm;18 mm;"";Undefined;natur_primavera_tolgy;"";"";"";"";"";"";"";"";"";"";"";"";Layer0
+Y;Ajto vizszintes elem;2;286 mm;60 mm;18 mm;286 mm;60 mm;18 mm;"";Undefined;natur_primavera_tolgy;"";"";"";"";"";"";"";"";"";"";"";"";Layer0
+Z;Ajto vizszintes elem;2;286 mm;60 mm;18 mm;286 mm;60 mm;18 mm;"";Undefined;natur_primavera_tolgy;"";"";"";"";"";"";"";"";"";"";"";"";Layer0
+AA;Ajtó keret vizszintes elem;4;247 mm;60 mm;18 mm;247 mm;60 mm;18 mm;"";Undefined;natur_primavera_tolgy;"";"";"";"";"";"";"";"";"";"";"";"";Layer0
+AB;Ajtó keret vizszintes elem;4;247 mm;60 mm;18 mm;247 mm;60 mm;18 mm;"";Undefined;natur_primavera_tolgy;"";"";"";"";"";"";"";"";"";"";"";"";Layer0
+AC;Ajto vizszintes elem;4;136 mm;60 mm;18 mm;136 mm;60 mm;18 mm;"";Undefined;natur_primavera_tolgy;"";"";"";"";"";"";"";"";"";"";"";"";Layer0
+AD;Ajto vizszintes elem;4;136 mm;60 mm;18 mm;136 mm;60 mm;18 mm;"";Undefined;natur_primavera_tolgy;"";"";"";"";"";"";"";"";"";"";"";"";Layer0
+AE;Ajto betet;1;616 mm;496 mm;8 mm;616 mm;496 mm;8 mm;"";Undefined;natur_primavera_tolgy;"";"";"";"";"";"";"";"";"";"";"";"";Layer0
+AF;Ajto betet;1;616 mm;496 mm;8 mm;616 mm;496 mm;8 mm;"";Undefined;natur_primavera_tolgy;"";"";"";"";"";"";"";"";"";"";"";"";Layer0
+AG;Ajto betet;1;616 mm;436 mm;8 mm;616 mm;436 mm;8 mm;"";Undefined;natur_primavera_tolgy;"";"";"";"";"";"";"";"";"";"";"";"";Layer0
+AH;Ajto betet;1;616 mm;416 mm;8 mm;616 mm;416 mm;8 mm;"";Undefined;natur_primavera_tolgy;"";"";"";"";"";"";"";"";"";"";"";"";Layer0
+AI;Ajto betet;1;616 mm;396 mm;8 mm;616 mm;396 mm;8 mm;"";Undefined;natur_primavera_tolgy;"";"";"";"";"";"";"";"";"";"";"";"";Layer0
+AJ;Ajto betet;1;616 mm;247 mm;8 mm;616 mm;247 mm;8 mm;"";Undefined;natur_primavera_tolgy;"";"";"";"";"";"";"";"";"";"";"";"";Layer0
+AK;Felso ajto betet;3;506 mm;226 mm;8 mm;506 mm;226 mm;8 mm;"";Undefined;natur_primavera_tolgy;"";"";"";"";"";"";"";"";"";"";"";"";Layer0
+AL;Felso ajto betet;1;496 mm;447 mm;8 mm;496 mm;447 mm;8 mm;"";Undefined;natur_primavera_tolgy;"";"";"";"";"";"";"";"";"";"";"";"";Layer0
+AM;Felso ajto betet;1;496 mm;314 mm;8 mm;496 mm;314 mm;8 mm;"";Undefined;natur_primavera_tolgy;"";"";"";"";"";"";"";"";"";"";"";"";Layer0
+AN;Felso ajto betet;10;496 mm;226 mm;8 mm;496 mm;226 mm;8 mm;"";Undefined;natur_primavera_tolgy;"";"";"";"";"";"";"";"";"";"";"";"";Layer0
+AO;Ajto betet;1;356 mm;236 mm;8 mm;356 mm;236 mm;8 mm;"";Undefined;natur_primavera_tolgy;"";"";"";"";"";"";"";"";"";"";"";"";Layer0
+AP;Ajto betet;3;356 mm;76 mm;8 mm;356 mm;76 mm;8 mm;"";Undefined;natur_primavera_tolgy;"";"";"";"";"";"";"";"";"";"";"";"";Layer0
+AQ;Ajto betet;2;316 mm;226 mm;8 mm;316 mm;226 mm;8 mm;"";Undefined;natur_primavera_tolgy;"";"";"";"";"";"";"";"";"";"";"";"";Layer0
+AR;Ajto betet;1;316 mm;76 mm;8 mm;316 mm;76 mm;8 mm;"";Undefined;natur_primavera_tolgy;"";"";"";"";"";"";"";"";"";"";"";"";Layer0
+AS;Felso ajto betet;3;247 mm;226 mm;8 mm;247 mm;226 mm;8 mm;"";Undefined;natur_primavera_tolgy;"";"";"";"";"";"";"";"";"";"";"";"";Layer0
+A;hátlap;1;1090 mm;710 mm;4 mm;1090 mm;710 mm;4 mm;"";Undefined;Teddy_Paper;"";"";"";"";"";"";"";"";"";"";"";"";Layer0
+B;Felső1/Hátlap;1;891 mm;574 mm;4 mm;891 mm;574 mm;4 mm;"";Undefined;Teddy_Paper;"";"";"";"";"";"";"";"";"";"";"";"";Layer0
+C;hátlap;1;710 mm;590 mm;4 mm;710 mm;590 mm;4 mm;"";Undefined;Teddy_Paper;"";"";"";"";"";"";"";"";"";"";"";"";Layer0
+D;hátlap;1;710 mm;590 mm;4 mm;710 mm;590 mm;4 mm;"";Undefined;Teddy_Paper;"";"";"";"";"";"";"";"";"";"";"";"";Layer0
+E;hátlap;1;710 mm;490 mm;4 mm;710 mm;490 mm;4 mm;"";Undefined;Teddy_Paper;"";"";"";"";"";"";"";"";"";"";"";"";Layer0
+F;hátlap;1;710 mm;450 mm;4 mm;710 mm;450 mm;4 mm;"";Undefined;Teddy_Paper;"";"";"";"";"";"";"";"";"";"";"";"";Layer0
+G;hátlap;1;710 mm;410 mm;4 mm;710 mm;410 mm;4 mm;"";Undefined;Teddy_Paper;"";"";"";"";"";"";"";"";"";"";"";"";Layer0
+H;hátlap;1;710 mm;341 mm;4 mm;710 mm;341 mm;4 mm;"";Undefined;Teddy_Paper;"";"";"";"";"";"";"";"";"";"";"";"";Layer0
+I;Felső1/Hátlap;1;647 mm;584 mm;4 mm;647 mm;584 mm;4 mm;"";Undefined;Teddy_Paper;"";"";"";"";"";"";"";"";"";"";"";"";Layer0
+J;Felső1/Hátlap;3;647 mm;574 mm;4 mm;647 mm;574 mm;4 mm;"";Undefined;Teddy_Paper;"";"";"";"";"";"";"";"";"";"";"";"";Layer0
+K;Felső1/Hátlap;1;647 mm;325 mm;4 mm;647 mm;325 mm;4 mm;"";Undefined;Teddy_Paper;"";"";"";"";"";"";"";"";"";"";"";"";Layer0
+L;Felső1/Hátlap;1;584 mm;317 mm;4 mm;584 mm;317 mm;4 mm;"";Undefined;Teddy_Paper;"";"";"";"";"";"";"";"";"";"";"";"";Layer0
+M;Felső1/Hátlap;2;574 mm;317 mm;4 mm;574 mm;317 mm;4 mm;"";Undefined;Teddy_Paper;"";"";"";"";"";"";"";"";"";"";"";"";Layer0
+N;Felső1/Hátlap;1;574 mm;317 mm;4 mm;574 mm;317 mm;4 mm;"";Undefined;Teddy_Paper;"";"";"";"";"";"";"";"";"";"";"";"";Layer0
+O;Felső1/Hátlap;1;325 mm;317 mm;4 mm;325 mm;317 mm;4 mm;"";Undefined;Teddy_Paper;"";"";"";"";"";"";"";"";"";"";"";"";Layer0
