@@ -1,13 +1,13 @@
 import app.szabasjegyzek_szerkeszto as szabjegy
 import app.adatgyujto as adatgyujto
+import app.faj_beolvaso_kiirato as faj
 
 class Arajanlat:
-    def __init__(self, df, wb, vezetek_nev, kereszt_nev):
+    def __init__(self, df, vezetek_nev, kereszt_nev):
         self.df = df
-        self.wb = wb
-        self.ws = wb['arajanlat']
         self.vezetek_nev = vezetek_nev
         self.kereszt_nev = kereszt_nev
+        self.wb, self.ws = faj.BeolvasKiirat().szerkesztett_excel_beolvaso("minta_arajanlat.xlsx")
 
     def szemelyes_adatok(self):
         jotform = adatgyujto.AdatokGyujtese().jotform_to_dataframe()
@@ -24,8 +24,8 @@ class Arajanlat:
             self.ws["F6"] = email
             self.ws["F7"] = cim
 
-    def anyagok(self):
-        anyagjegyzek = szabjegy.SzabasjegyzekSzerkeszto(self.df).anyagigeny_szamitasa()
+    def anyagok_beirasa(self):
+        anyagjegyzek, nyomtathato_szabjegy = szabjegy.SzabasjegyzekSzerkeszto(self.df).anyagigeny_szamitasa()
         sor = 12
         for _, row in anyagjegyzek.iterrows():
             self.ws.insert_rows(sor)
@@ -37,3 +37,17 @@ class Arajanlat:
             self.ws.cell(row=sor, column=7, value=0)
             self.ws.cell(row=sor, column=8, value=0)
             sor += 1
+
+        ws_2 = self.wb.create_sheet(title="szabasjegyzek")
+
+        for i, col in enumerate(nyomtathato_szabjegy.columns, start=1):
+            ws_2.cell(row=1, column=i, value=col)  # oszlopnevek
+
+        for r in nyomtathato_szabjegy.itertuples(index=False):
+            ws_2.append(r)
+
+    def elkeszites(self):
+        self.szemelyes_adatok()
+        self.anyagok_beirasa()
+
+        faj.BeolvasKiirat().exel_kiiratasa(self.wb, r"C:\Users\csiki\OneDrive\csixwood program\proba")

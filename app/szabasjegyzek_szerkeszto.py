@@ -16,8 +16,7 @@ class SzabasjegyzekSzerkeszto:
         self.df.rename(columns={"Badges": "Anyag"}, inplace=True)
         self.df.drop(columns=["No.", "Length - raw", "Width - raw", "Thickness - raw", "Area - final", "Type",
                          "Material description", "URL of the material", "Instance names", "URL", "Edge Length 1",
-                         "Edge Length 2", "Edge Width 1", "Edge Width 2", "Frontside", "Backside", "Tags"],
-                inplace=True)
+                         "Edge Length 2", "Edge Width 1", "Edge Width 2", "Frontside", "Backside", "Tags"], inplace=True)
 
     def azonos_sorok_szurese(self, kulcsok=None, db_col="DB"):
         if kulcsok is None:
@@ -65,16 +64,19 @@ class SzabasjegyzekSzerkeszto:
         self.sorszam_hozzaadasa()
         self.mm_eltavolitasa()
 
-        return self.df
+        #faj.BeolvasKiirat().df_kiiratasa_exelbe(self.df, "szabasjegyzek.xlsx", r"C:\Users\csiki\OneDrive\csixwood program\proba")
+        nyomtathato_szabjegy = self.df.copy()
+
+        self.hosz_terulet_terfogat_szamitas()
+        self.elzaras_szamitas()
+
+        return self.df, nyomtathato_szabjegy
 
     def anyagigeny_szamitasa(self):
         # Beolvasás
         anyagtip = faj.BeolvasKiirat().csv_beolvasasa_databol("anyagtipusok.csv")
 
-        # Feldolgozott szabásjegyzék
-        self.df = self.szabasjegyzek_szerkeszto()
-        self.hosz_terulet_terfogat_szamitas()
-        self.elzaras_szamitas()
+        self.df, nyomtathato_szabjegy = self.szabasjegyzek_szerkeszto()
 
         # Osszegzés anyag és szín szerint
         osszegzes = self.df.groupby(["Anyag", "Szin"], as_index=False, dropna=False)[
@@ -116,6 +118,6 @@ class SzabasjegyzekSzerkeszto:
         df_eredmeny = pd.DataFrame(eredmeny_list)
         print(df_eredmeny)
 
-        return df_eredmeny
+        return df_eredmeny, nyomtathato_szabjegy
 
 
