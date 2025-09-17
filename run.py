@@ -3,8 +3,8 @@ import app.faj_beolvaso_kiirato as faj
 import app.arajanlat_keszito as araj
 
 def szabasjegyzek():
-    df = faj.BeolvasKiirat().csv_beolvasasa_databol("galeria.csv")
-    #df = faj.BeolvasKiirat().csv_beolvas_df()
+    #df = faj.BeolvasKiirat().csv_beolvasasa_databol("galeria.csv")
+    df = faj.BeolvasKiirat().csv_beolvas_df()
 
     araj.Arajanlat(df, "Gárdián", "Lajos").elkeszites()
 
