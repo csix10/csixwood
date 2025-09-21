@@ -50,4 +50,4 @@ class Arajanlat:
         self.szemelyes_adatok()
         self.anyagok_beirasa()
 
-        faj.BeolvasKiirat().exel_kiiratasa(self.wb, r"C:\Users\csiki\OneDrive\csixwood program\proba")
+        faj.BeolvasKiirat().exel_kiiratasa(self.wb, r"C:\Users\balin\OneDrive\csixwood program\proba")

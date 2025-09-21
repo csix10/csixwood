@@ -1,8 +1,11 @@
 import requests
 import pandas as pd
 import re
+from bs4 import BeautifulSoup
+from datetime import datetime
+from typing import Tuple, Dict
 
-class AdatokGyujtese:
+class Jotform:
     def __init__(self):
         pass
 
@@ -73,3 +76,100 @@ class AdatokGyujtese:
 
         df = pd.DataFrame(rows)
         return df
+
+class Utdij_kalkulator:
+    def __init__(self, erkezesi_hely: str, uzemanyag_fajta="benzin", l_per_100km = 8.5, autoamortizacio_per_km = 15, indulasi_hely="Szeged, Selmeci utca 17."):
+        self.uzemanyag_fajta = uzemanyag_fajta
+        self.l_per_100km = l_per_100km
+        self.hely_1 = indulasi_hely
+        self.hely_2 = erkezesi_hely
+        self.autoamortizacio_per_km = autoamortizacio_per_km
+
+        self.NOMINATIM_URL = "https://nominatim.openstreetmap.org/search"
+        self.OSRM_URL = "https://router.project-osrm.org/route/v1/driving/{lon1},{lat1};{lon2},{lat2}"
+        self.HEADERS = {"User-Agent": "asztalos-arajanlat/1.0"}
+
+    def nav_uzemanyag_arlista(self):
+        ev = datetime.now().year
+        url = f"https://nav.gov.hu/ugyfeliranytu/uzemanyag/{ev}-ben-alkalmazhato-uzemanyagarak"
+
+        r = requests.get(url)
+        r.raise_for_status()
+        soup = BeautifulSoup(r.text, "html.parser")
+
+        # táblázat és sorok
+        table = soup.find("table")
+        rows = table.find_all("tr")
+
+        # cellák kiszedése minden sorból
+        data = []
+        for row in rows:
+            cells = [c.get_text(strip=True) for c in row.find_all(["td", "th"])]
+            if cells:  # üres sorokat kihagyjuk
+                data.append(cells)
+
+        # DataFrame készítés
+        df = pd.DataFrame(data[1:], columns=data[0])  # első sor a fejléc
+        return df
+
+    def aktualis_benzin_ar(self):
+        df = self.nav_uzemanyag_arlista()
+        if self.uzemanyag_fajta == "benzin":
+            return df["ÓlmozatlanmotorbenzinESZ-95(Ft/l)"].loc[0]
+        elif self.uzemanyag_fajta == "dizel":
+            return df["Gázolaj(Ft/l)"].loc[0]
+        else:
+            print("HIBA!")
+            return None
+
+    def geocode(self, place: str) -> Tuple[float, float]:
+        """Helynév/cím → (lat, lon)."""
+        params = {"q": place, "format": "json", "limit": 1}
+        r = requests.get(self.NOMINATIM_URL, params=params, headers=self.HEADERS, timeout=20)
+        r.raise_for_status()
+        data = r.json()
+        if not data:
+            raise ValueError(f"Nem található hely: {place}")
+        return float(data[0]["lat"]), float(data[0]["lon"])
+
+    def route_distance_time(self, origin: str, destination: str) -> Dict[str, float]:
+        """Autós útvonal távolság (km) és idő (perc) OSRM-ből."""
+        lat1, lon1 = self.geocode(origin)
+        lat2, lon2 = self.geocode(destination)
+        url = self.OSRM_URL.format(lon1=lon1, lat1=lat1, lon2=lon2, lat2=lat2)
+        params = {"overview": "false", "alternatives": "false", "annotations": "false"}
+        r = requests.get(url, params=params, headers=self.HEADERS, timeout=20)
+        r.raise_for_status()
+        js = r.json()
+        if js.get("code") != "Ok" or not js.get("routes"):
+            raise RuntimeError(f"OSRM nem adott útvonalat: {js.get('message')}")
+        route = js["routes"][0]
+        distance_km = route["distance"] / 1000.0
+        duration_min = route["duration"] / 60.0
+        return {"distance_km": distance_km, "duration_min": duration_min}
+
+    def fuel_cost(self, distance_km: float) -> Dict[str, float]:
+        """
+        Üzemanyagköltség (HUF)
+        """
+        price_per_liter = float(self.aktualis_benzin_ar())
+        liters = distance_km * (self.l_per_100km / 100.0)
+        cost = liters * price_per_liter
+        return {"koltseg": cost, "liter": liters, "literar_huf": price_per_liter}
+
+    def utdij_kalkulacio(self) -> Dict[str, float]:
+        rt = self.route_distance_time(self.hely_1, self.hely_2)
+        fogyasztas = self.fuel_cost(rt["distance_km"])
+        amortizacio = rt["distance_km"] * self.autoamortizacio_per_km
+        return {
+            "indulas": self.hely_1,
+            "erkezes": self.hely_2,
+            "tavolsag_km": round(rt["distance_km"], 1),
+            "menetido_perc": round(rt["duration_min"]),
+            "fogyasztas_l100": self.l_per_100km,
+            "literar_huf": fogyasztas["literar_huf"],
+            "literek": round(fogyasztas["liter"], 2),
+            "uzemanyag_koltseg_huf": round(fogyasztas["koltseg"]),
+            "auto_amortizacio_huf": round(amortizacio),
+            "osszesen_huf": round((fogyasztas["koltseg"] + amortizacio) * 2)
+        }

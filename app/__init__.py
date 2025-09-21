@@ -1,4 +1,5 @@
 from app.szabasjegyzek_szerkeszto import SzabasjegyzekSzerkeszto
 from app.faj_beolvaso_kiirato import BeolvasKiirat
 from app.arajanlat_keszito import Arajanlat
-from app.adatgyujto import AdatokGyujtese
+from app.adatgyujto import Jotform
+from app.adatgyujto import Utdij_kalkulator
