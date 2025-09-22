@@ -170,6 +170,7 @@ class Utdij_kalkulator:
             "literar_huf": fogyasztas["literar_huf"],
             "literek": round(fogyasztas["liter"], 2),
             "uzemanyag_koltseg_huf": round(fogyasztas["koltseg"]),
+            "amortizacio_per_km" : self.autoamortizacio_per_km,
             "auto_amortizacio_huf": round(amortizacio),
             "osszesen_huf": round((fogyasztas["koltseg"] + amortizacio) * 2)
         }

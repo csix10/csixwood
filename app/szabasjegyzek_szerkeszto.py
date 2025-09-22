@@ -82,7 +82,6 @@ class SzabasjegyzekSzerkeszto:
         osszegzes = self.df.groupby(["Anyag", "Szin"], as_index=False, dropna=False)[
             ["Osz_Hosz", "Terulet", "Terfogat", "Vekonyelzaro", "Vastagelzaro"]
         ].sum()
-        print(osszegzes)
 
         # Csak az adott anyaghoz tartozó elszámolási alapot hagyjuk meg
         eredmeny_list = []
@@ -110,13 +109,14 @@ class SzabasjegyzekSzerkeszto:
             eredmeny_list.append({
                 "Anyag": anyag,
                 "Szin": szin,
-                "Menyiseg": ertek,
-                "Mértékegység": mertekegyseg
+                "Mennyiseg": ertek,
+                "Mertekegyseg": mertekegyseg,
+                "Egysegar": 0,
+                "Osszar": 0
             })
 
         # Új DataFrame az anyagonkénti elszámolásra
         df_eredmeny = pd.DataFrame(eredmeny_list)
-        print(df_eredmeny)
 
         return df_eredmeny, nyomtathato_szabjegy
 
