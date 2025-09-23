@@ -1,15 +1,15 @@
-Anyag;Szamitasialap;
-butorlap;Terulet;
-vastag_elzaro;Osz_Hosz;
-vekony_elzaro;Osz_Hosz;
-munkalap;Osz_Hosz;
-borovi fenyo;Terfogat;
-lucfenyo;Terfogat;
-tablasitott borovi;Terulet;
-tablasitott luc;Terulet;
-tolgy;Terfogat;
-bukk;Terfogat;
-retegelt lemez;Terulet;
-HDF;Terulet;
-MDF;Terulet;
-;;
+Anyag;Szamitasialap;Hulladekaranya;Beszerzeshelyes
+butorlap;Terulet;1,1;Karnis
+vastag_elzaro;Osz_Hosz;1,1;Karnis
+vekony_elzaro;Osz_Hosz;1,1;Karnis
+munkalap;Osz_Hosz;1,1;Karnis
+borovi fenyo;Terfogat;2;Borovi
+lucfenyo;Terfogat;2;Borovi
+tablasitott borovi;Terulet;1,5;Borovi
+tablasitott luc;Terulet;1,5;Borovi
+tolgy;Terfogat;2;Borovi
+bukk;Terfogat;2;Borovi
+retegelt lemez;Terulet;1,5;Borovi
+HDF;Terulet;1,1;Karnis
+MDF;Terulet;1,5;Karnis
+;;;

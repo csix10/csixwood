@@ -90,9 +90,11 @@ class SzabasjegyzekSzerkeszto:
             anyag = row["Anyag"]
             szin = row["Szin"]
             alap = anyagtip.loc[anyagtip["Anyag"] == anyag, "Szamitasialap"].values
+            hulladek_arany = anyagtip.loc[anyagtip["Anyag"] == anyag, "Hulladekaranya"].values
             if len(alap) == 0:
                 continue  # ha nincs meghatározva, kihagyjuk
             alap = alap[0]  # pl. "Terulet" vagy "Terfogat"
+            hulladek_arany =float(hulladek_arany[0])
 
             # Kiválasztjuk az adott alaphoz tartozó oszlopot
             ertek = row.get(alap, 0)
@@ -109,7 +111,7 @@ class SzabasjegyzekSzerkeszto:
             eredmeny_list.append({
                 "Anyag": anyag,
                 "Szin": szin,
-                "Mennyiseg": ertek,
+                "Mennyiseg": ertek * hulladek_arany,
                 "Mertekegyseg": mertekegyseg,
                 "Egysegar": 0,
                 "Osszar": 0

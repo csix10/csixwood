@@ -4,7 +4,7 @@ import app.faj_beolvaso_kiirato as faj
 import pandas as pd
 
 class Arajanlat:
-    def __init__(self, df, vezetek_nev, kereszt_nev):
+    def __init__(self, df, vezetek_nev = "", kereszt_nev = ""):
         self.df = df
         self.vezetek_nev = vezetek_nev
         self.kereszt_nev = kereszt_nev
@@ -29,6 +29,9 @@ class Arajanlat:
             self.sor += 1
 
     def szemelyes_adatok(self):
+        if self.vezetek_nev == "" and self.kereszt_nev == "":
+            print("Nincs név megadva, a személyes adatok nem lettek beírva!")
+            return
         jotform = adatgyujto.Jotform().jotform_to_dataframe()
         adat = jotform[(jotform["name.first"] == self.vezetek_nev) & (jotform["name.last"] == self.kereszt_nev)]
 
@@ -60,7 +63,10 @@ class Arajanlat:
             ws_2.append(r)
 
     def utdij_beirasa(self):
-        print(self.ws["F7"])
+            # ha F7 üres vagy None, akkor kilépünk
+        if not self.ws["F7"].value:
+            print("Nincs cím megadva, ezért nem történt utdíj kalkulálás.")
+            return
         fogyasztas = adatgyujto.Utdij_kalkulator(self.ws["F7"].value).utdij_kalkulacio()
 
         sorok = [
