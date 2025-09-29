@@ -1,9 +1,11 @@
 import pandas as pd
 import app.faj_beolvaso_kiirato as faj
+import app.arukereso as arukereso
 
 class SzabasjegyzekSzerkeszto:
     def __init__(self, df):
         self.df = df
+        self.kereso = arukereso.Arukereso()
 
     def oszlop_atnevezes_torles(self):
         self.df.rename(columns={"Designation": "Nev"}, inplace=True)
@@ -72,6 +74,15 @@ class SzabasjegyzekSzerkeszto:
 
         return self.df, nyomtathato_szabjegy
 
+    def bongeszo(self, nev, hely):
+        if hely == "Butorkellek":
+            return self.kereso.butorkellek(nev)
+        else:
+            return { "nev": "",
+                "url": "",
+                "ar": "0 ft"}
+
+
     def anyagigeny_szamitasa(self):
         # Beolvasás
         anyagtip = faj.BeolvasKiirat().csv_beolvasasa_databol("anyagtipusok.csv")
@@ -91,8 +102,14 @@ class SzabasjegyzekSzerkeszto:
             szin = row["Szin"]
             alap = anyagtip.loc[anyagtip["Anyag"] == anyag, "Szamitasialap"].values
             hulladek_arany = anyagtip.loc[anyagtip["Anyag"] == anyag, "Hulladekaranya"].values
+            kereses_helye = anyagtip.loc[anyagtip["Anyag"] == anyag, "Beszerzeshelyes"].values
             if len(alap) == 0:
                 continue  # ha nincs meghatározva, kihagyjuk
+
+            url_ar = self.bongeszo(szin, kereses_helye)
+            print(url_ar["ar"])
+            egysegar = int(url_ar["ar"][:-3].replace(".", ""))
+
             alap = alap[0]  # pl. "Terulet" vagy "Terfogat"
             hulladek_arany =float(hulladek_arany[0])
 
@@ -114,8 +131,8 @@ class SzabasjegyzekSzerkeszto:
                 "Szin": szin,
                 "Mennyiseg": ertek * hulladek_arany,
                 "Mertekegyseg": mertekegyseg,
-                "Egysegar": 0,
-                "Osszar": 0
+                "Egysegar": egysegar,
+                "Osszar": ertek * hulladek_arany * egysegar,
             })
 
         # Új DataFrame az anyagonkénti elszámolásra
