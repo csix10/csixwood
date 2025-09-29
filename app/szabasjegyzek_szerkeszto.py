@@ -80,7 +80,7 @@ class SzabasjegyzekSzerkeszto:
 
         # Osszegzés anyag és szín szerint
         osszegzes = self.df.groupby(["Anyag", "Szin"], as_index=False, dropna=False)[
-            ["Osz_Hosz", "Terulet", "Terfogat", "Vekonyelzaro", "Vastagelzaro"]
+            ["DB", "Osz_Hosz", "Terulet", "Terfogat", "Vekonyelzaro", "Vastagelzaro"]
         ].sum()
 
         # Csak az adott anyaghoz tartozó elszámolási alapot hagyjuk meg
@@ -103,6 +103,7 @@ class SzabasjegyzekSzerkeszto:
                 "Hosz": "m",
                 "Terulet": "m²",
                 "Terfogat": "m³",
+                "DB": "db",
                 "Vekonyelzaro": "m",
                 "Vastagelzaro": "m"
             }
