@@ -117,7 +117,7 @@ class SzabasjegyzekSzerkeszto:
             ertek = row.get(alap, 0)
 
             mertekegyseg_dict = {
-                "Hosz": "m",
+                "Osz_Hosz": "m",
                 "Terulet": "m²",
                 "Terfogat": "m³",
                 "DB": "db",
@@ -134,6 +134,32 @@ class SzabasjegyzekSzerkeszto:
                 "Egysegar": egysegar,
                 "Osszar": ertek * hulladek_arany * egysegar,
             })
+
+            #Vekonyelzaro
+            if row.get("Vekonyelzaro", 0) > 0:
+                meterar_vekony = 393 #Ezt kesobb modosítani kell!
+                menyiseg_vekony = row["Vekonyelzaro"]/1000
+                eredmeny_list.append({
+                    "Anyag": "vekony_elzaro",
+                    "Szin": szin,
+                    "Mennyiseg": menyiseg_vekony,
+                    "Mertekegyseg": "m",
+                    "Egysegar": meterar_vekony,
+                    "Osszar": meterar_vekony * menyiseg_vekony
+                })
+
+            # Vastagelzáró
+            if row.get("Vastagelzaro", 0) > 0:
+                meterar_vastag = 727  # Ezt kesobb modosítani kell!
+                menyiseg_vastag = row["Vastagelzaro"]/1000
+                eredmeny_list.append({
+                    "Anyag": "vastag_elzaro",
+                    "Szin": szin,
+                    "Mennyiseg": menyiseg_vastag,
+                    "Mertekegyseg": "m",
+                    "Egysegar": meterar_vastag, #Ezt kesobb modosítani kell!
+                    "Osszar": meterar_vastag * menyiseg_vastag
+                })
 
         # Új DataFrame az anyagonkénti elszámolásra
         df_eredmeny = pd.DataFrame(eredmeny_list)

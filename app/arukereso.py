@@ -61,3 +61,22 @@ class Arukereso:
             print("Nem találtam meg a " + termek_neve + "nevű terméket!")
 
         return products[0] #Majd ez is valtoztatni kell ha tobb termeket akarok visszaadni!
+
+    def karnis(self, termek_neve):
+        driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=self.options)
+        driver.get("https://butorszeged.hu/karnisbutor.hu/szakaruhaz/szabaszati-arlista/")
+
+        search_box = driver.find_element(By.CSS_SELECTOR, 'input[type="search"]')
+
+        search_box.send_keys(termek_neve)
+        time.sleep(3)
+
+        # Kiválasztjuk az eredményeket (pl. terméknevek)
+        rows = driver.find_elements(By.CSS_SELECTOR, "#tablepress-2 tbody tr")
+
+        for row in rows:
+            cells = row.find_elements(By.TAG_NAME, "td")
+            adatok = [c.text for c in cells]
+            print(adatok)
+
+        driver.quit()
