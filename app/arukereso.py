@@ -3,6 +3,9 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from webdriver_manager.chrome import ChromeDriverManager
 import time
+import requests
+import fitz
+import camelot
 
 class Arukereso:
     def __init__(self):
@@ -90,3 +93,29 @@ class Arukereso:
             print("Nem találtam meg a " + termek_neve + "nevű terméket!")
 
         return products[0] #Majd ez is valtoztatni kell ha tobb termeket akarok visszaadni!
+
+    def borovi(self, termek_neve):
+        borovi_arlista_url = "https://www.borovigerendahazkft.hu/tools/generate_pdf"
+        pdf_path = "borovi_ar.pdf"
+
+        response = requests.get(borovi_arlista_url)
+        with open(pdf_path, "wb") as f:
+            f.write(response.content)
+
+        doc = fitz.open("borovi_ar.pdf")
+
+        eredmenyek = {}
+
+        for i, page in enumerate(doc):
+            text = page.get_text("text")
+
+            # ha a cím pl. "Eladási adatok"
+            if termek_neve in text:
+                tables = camelot.read_pdf("borovi_ar.pdf", pages=str(i + 1))
+                if tables:
+                    eredmenyek[termek_neve] = tables[0].df
+
+        return eredmenyek
+
+eredmenyek = Arukereso().borovi("Táblásított fenyő kistáblák")
+print(eredmenyek)

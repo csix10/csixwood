@@ -105,6 +105,7 @@ class SzabasjegyzekSzerkeszto:
             alap = anyagtip.loc[anyagtip["Anyag"] == anyag, "Szamitasialap"].values
             hulladek_arany = anyagtip.loc[anyagtip["Anyag"] == anyag, "Hulladekaranya"].values
             kereses_helye = anyagtip.loc[anyagtip["Anyag"] == anyag, "Beszerzeshelyes"].values
+            szep_anyagnev = anyagtip.loc[anyagtip["Anyag"] == anyag, "Anyag_szep"].values
             if len(alap) == 0:
                 continue  # ha nincs meghatározva, kihagyjuk
 
@@ -130,7 +131,7 @@ class SzabasjegyzekSzerkeszto:
             mertekegyseg = mertekegyseg_dict.get(alap, "")
             # Hozzáadjuk az eredmény listához, opcionálisan mértékegységgel
             eredmeny_list.append({
-                "Anyag": anyag,
+                "Anyag": szep_anyagnev,
                 "Szin": szin,
                 "URL": url_ar["url"],
                 "Mennyiseg": ertek * hulladek_arany,
@@ -144,7 +145,7 @@ class SzabasjegyzekSzerkeszto:
                 meterar_vekony = 393 #Ezt kesobb modosítani kell!
                 menyiseg_vekony = row["Vekonyelzaro"]/1000
                 eredmeny_list.append({
-                    "Anyag": "vekony_elzaro",
+                    "Anyag": "Vékony élzáró",
                     "Szin": szin,
                     "URL": "",
                     "Mennyiseg": menyiseg_vekony,
@@ -158,7 +159,7 @@ class SzabasjegyzekSzerkeszto:
                 meterar_vastag = 727  # Ezt kesobb modosítani kell!
                 menyiseg_vastag = row["Vastagelzaro"]/1000
                 eredmeny_list.append({
-                    "Anyag": "vastag_elzaro",
+                    "Anyag": "Vastag élzaró",
                     "Szin": szin,
                     "URL": "",
                     "Mennyiseg": menyiseg_vastag,

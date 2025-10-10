@@ -1,19 +1,19 @@
-Anyag;Szamitasialap;Hulladekaranya;Beszerzeshelyes
-butorlap;Terulet;1.1;Karnis
-vastag_elzaro;Osz_Hosz;1.1;Karnis
-vekony_elzaro;Osz_Hosz;1.1;Karnis
-munkalap;Osz_Hosz;1.1;Karnis
-borovi fenyo;Terfogat;2;Borovi
-lucfenyo;Terfogat;2;Borovi
-tablasitott borovi;Terulet;1.5;Borovi
-tablasitott luc;Terulet;1.5;Borovi
-tolgy;Terfogat;2;Borovi
-bukk;Terfogat;2;Borovi
-retegelt lemez;Terulet;1.5;Borovi
-HDF;Terulet;1.1;Karnis
-MDF;Terulet;1.5;Karnis
-fuggeszto;DB;1;Butorkellek
-fogantyu;DB;1;Butorkellek
-kotoelem;DB;1;Butorkellek
-lab;DB;1;Butorkellek
-pant;DB;1;Butorkellek
+Anyag;Anyag_szep;Szamitasialap;Hulladekaranya;Beszerzeshelyes
+butorlap;Bútorlap;Terulet;1.1;Karnis
+vastag_elzaro;Vastag elzáró;Osz_Hosz;1.1;Karnis
+vekony_elzaro;Vékony élzáró;Osz_Hosz;1.1;Karnis
+munkalap;Munkalap;Osz_Hosz;1.1;Karnis
+borovi fenyo;Borovi fenyő;Terfogat;2;Borovi
+lucfenyo;Lucfenyő;Terfogat;2;Borovi
+tablasitott borovi;Táblásitott borovi;Terulet;1.5;Borovi
+tablasitott luc;Táblásitott luc;Terulet;1.5;Borovi
+tolgy;Tölgy;Terfogat;2;Borovi
+bukk;Bükk;Terfogat;2;Borovi
+retegelt lemez;Rétegelt lemez;Terulet;1.5;Borovi
+HDF;Hátlap lemez;Terulet;1.1;Karnis
+MDF;MDF;Terulet;1.5;Karnis
+fuggeszto;Függesztő;DB;1;Butorkellek
+fogantyu;Fogantyú;DB;1;Butorkellek
+kotoelem;Kötőelem;DB;1;Butorkellek
+lab;Bútorláb;DB;1;Butorkellek
+pant;Kivetőpánt;DB;1;Butorkellek
