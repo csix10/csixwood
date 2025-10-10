@@ -31,12 +31,7 @@ class Arukereso:
                 url = item.find_element(By.CSS_SELECTOR, ".product-card-title a").get_attribute("href")
             except:
                 url = ""
-            ''' 
-            try:
-                price = item.find_element(By.CSS_SELECTOR, ".product-price").text.strip()
-            except:
-                price = "0 ft"
-            '''
+
             price_elements = item.find_elements(By.CSS_SELECTOR, ".product-price")
 
             if price_elements:
@@ -67,16 +62,31 @@ class Arukereso:
         driver.get("https://butorszeged.hu/karnisbutor.hu/szakaruhaz/szabaszati-arlista/")
 
         search_box = driver.find_element(By.CSS_SELECTOR, 'input[type="search"]')
-
         search_box.send_keys(termek_neve)
         time.sleep(3)
 
-        # Kiválasztjuk az eredményeket (pl. terméknevek)
+        # Táblázat sorainak beolvasása
         rows = driver.find_elements(By.CSS_SELECTOR, "#tablepress-2 tbody tr")
+        products = []
 
         for row in rows:
             cells = row.find_elements(By.TAG_NAME, "td")
-            adatok = [c.text for c in cells]
-            print(adatok)
+            adatok = [c.text.strip() for c in cells]
 
+            # Webshop link keresése a sorban (ha van)
+            try:
+                link_elem = row.find_element(By.CSS_SELECTOR, "a[href*='product']")
+                webshop_link = link_elem.get_attribute("href")
+            except:
+                webshop_link = None
+
+            products.append({
+                "nev": adatok[7],
+                "url": webshop_link,
+                "ar": adatok[4][:-3]
+            })
         driver.quit()
+        if not products:
+            print("Nem találtam meg a " + termek_neve + "nevű terméket!")
+
+        return products[0] #Majd ez is valtoztatni kell ha tobb termeket akarok visszaadni!

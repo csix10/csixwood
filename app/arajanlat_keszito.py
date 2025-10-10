@@ -12,7 +12,7 @@ class Arajanlat:
         self.vezetek_nev = vezetek_nev
         self.kereszt_nev = kereszt_nev
         self.wb, self.ws = faj.BeolvasKiirat().szerkesztett_excel_beolvaso("minta_arajanlat.xlsx")
-        self.sor = 16
+        self.sor = 17
         self.kezdosor = self.sor
 
     def tablazat_tolto(self, anyagjegyzek):
@@ -34,27 +34,22 @@ class Arajanlat:
             self.ws.cell(row=self.sor, column=4, value=row.get("Szin", ""))
 
             url = row.get("URL", "")
-            print("arajnalat")
-            print(url)
+
             if isinstance(url, float) or not url:
                 url = ""
 
             if url:
-                cell = self.ws.cell(row=self.sor, column=5, value="Link")
-                cell.hyperlink = str(url)
-                cell.style = "Hyperlink"
+                c5 = self.ws.cell(row=self.sor, column=5, value="Link")
+                c5.hyperlink = str(url)
+                c5.style = "Hyperlink"
 
-            self.ws.cell(row=self.sor, column=6, value=row.get("Mennyiseg", ""))
+            self.ws.cell(row=self.sor, column=6, value=round(row.get("Mennyiseg", ""),2))
             self.ws.cell(row=self.sor, column=7, value=row.get("Mertekegyseg", ""))
-            self.ws.cell(row=self.sor, column=8, value=row.get("Egysegar", ""))
-            self.ws.cell(row=self.sor, column=9, value=row.get("Osszar", ""))
+            c8 = self.ws.cell(row=self.sor, column=8, value=round(row.get("Egysegar", ""),0))
+            c8.number_format = '#,##0 "Ft"'
+            c9 = self.ws.cell(row=self.sor, column=9, value=round(row.get("Osszar", ""),0))
+            c9.number_format = '#,##0 "Ft"'
 
-            '''
-            cell = ws['A1']
-            cell.value = "Kattints ide"
-            cell.hyperlink = "https://www.example.com"
-            cell.style = "Hyperlink"  # hogy kék és aláhúzott legyen
-            '''
             # --- Egyesítés ---
             self.ws.merge_cells(
                 start_row=self.sor,
@@ -97,17 +92,17 @@ class Arajanlat:
 
             center_align = stilus.Alignment(horizontal="left", vertical="center",  wrap_text=True)
 
-            self.ws["G8"] = self.vezetek_nev + " " + self.kereszt_nev
-            self.ws["G8"].alignment = center_align
-
-            self.ws["G9"] = tel
+            self.ws["G9"] = self.vezetek_nev + " " + self.kereszt_nev
             self.ws["G9"].alignment = center_align
 
-            self.ws["G10"] = email
+            self.ws["G10"] = tel
             self.ws["G10"].alignment = center_align
 
-            self.ws["G11"] = cim
+            self.ws["G11"] = email
             self.ws["G11"].alignment = center_align
+
+            self.ws["G12"] = cim
+            self.ws["G12"].alignment = center_align
 
     def anyagok_beirasa(self):
         anyagjegyzek, nyomtathato_szabjegy = szabjegy.SzabasjegyzekSzerkeszto(self.df).anyagigeny_szamitasa()
@@ -124,15 +119,17 @@ class Arajanlat:
 
     def utdij_beirasa(self):
             # ha F7 üres vagy None, akkor kilépünk
-        if not self.ws["F7"].value:
+        if not self.ws["G12"].value:
             print("Nincs cím megadva, ezért nem történt utdíj kalkulálás.")
             return
-        fogyasztas = adatgyujto.Utdij_kalkulator(self.ws["G11"].value).utdij_kalkulacio()
+        utdij = adatgyujto.Utdij_kalkulator(self.ws["G12"].value)
+        fogyasztas = utdij.utdij_kalkulacio()
 
         sorok = [
             {
                 "Anyag": "Benzin",
                 "Szin": "",
+                "URL": utdij.nav_url,
                 "Mennyiseg": fogyasztas.get("literek", 0) * 2,
                 "Mertekegyseg": "l",
                 "Egysegar": fogyasztas.get("literar_huf", 0),
@@ -141,6 +138,7 @@ class Arajanlat:
             {
                 "Anyag": "Autóamortizáció",
                 "Szin": "",
+                "URL": "",
                 "Mennyiseg": fogyasztas.get("tavolsag_km", 0) * 2,
                 "Mertekegyseg": "km",
                 "Egysegar": fogyasztas.get("amortizacio_per_km", 0),
@@ -149,7 +147,7 @@ class Arajanlat:
         ]
 
         anyagjegyzek_df = pd.DataFrame(sorok,
-                                       columns=["Anyag", "Szin", "Mennyiseg", "Mertekegyseg", "Egysegar", "Osszar"])
+                                       columns=["Anyag", "Szin", "URL", "Mennyiseg", "Mertekegyseg", "Egysegar", "Osszar"])
 
         self.tablazat_tolto(anyagjegyzek_df)
 

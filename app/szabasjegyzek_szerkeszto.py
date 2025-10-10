@@ -77,6 +77,8 @@ class SzabasjegyzekSzerkeszto:
     def bongeszo(self, nev, hely):
         if hely == "Butorkellek":
             return self.kereso.butorkellek(nev)
+        elif hely == "Karnis":
+            return self.kereso.karnis(nev)
         else:
             return { "nev": "",
                 "url": "",
@@ -108,7 +110,7 @@ class SzabasjegyzekSzerkeszto:
 
             url_ar = self.bongeszo(szin, kereses_helye)
             print(url_ar["ar"])
-            egysegar = int(url_ar["ar"][:-3].replace(".", ""))
+            egysegar = int(url_ar["ar"][:-2].replace(".", ""))
 
             alap = alap[0]  # pl. "Terulet" vagy "Terfogat"
             hulladek_arany =float(hulladek_arany[0])
@@ -124,8 +126,7 @@ class SzabasjegyzekSzerkeszto:
                 "Vekonyelzaro": "m",
                 "Vastagelzaro": "m"
             }
-            print("szabjegy")
-            print(url_ar["url"])
+
             mertekegyseg = mertekegyseg_dict.get(alap, "")
             # Hozzáadjuk az eredmény listához, opcionálisan mértékegységgel
             eredmeny_list.append({

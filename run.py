@@ -1,4 +1,3 @@
-import app.szabasjegyzek_szerkeszto as szabszerk
 import app.faj_beolvaso_kiirato as faj
 import app.arajanlat_keszito as araj
 import app.adatgyujto as adat

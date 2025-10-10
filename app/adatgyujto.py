@@ -85,15 +85,15 @@ class Utdij_kalkulator:
         self.hely_2 = erkezesi_hely
         self.autoamortizacio_per_km = autoamortizacio_per_km
 
+        self.ev = datetime.now().year
+        self.nav_url = f"https://nav.gov.hu/ugyfeliranytu/uzemanyag/{self.ev}-ben-alkalmazhato-uzemanyagarak"
+
         self.NOMINATIM_URL = "https://nominatim.openstreetmap.org/search"
         self.OSRM_URL = "https://router.project-osrm.org/route/v1/driving/{lon1},{lat1};{lon2},{lat2}"
         self.HEADERS = {"User-Agent": "asztalos-arajanlat/1.0"}
 
     def nav_uzemanyag_arlista(self):
-        ev = datetime.now().year
-        url = f"https://nav.gov.hu/ugyfeliranytu/uzemanyag/{ev}-ben-alkalmazhato-uzemanyagarak"
-
-        r = requests.get(url)
+        r = requests.get(self.nav_url)
         r.raise_for_status()
         soup = BeautifulSoup(r.text, "html.parser")
 
