@@ -124,11 +124,14 @@ class SzabasjegyzekSzerkeszto:
                 "Vekonyelzaro": "m",
                 "Vastagelzaro": "m"
             }
+            print("szabjegy")
+            print(url_ar["url"])
             mertekegyseg = mertekegyseg_dict.get(alap, "")
             # Hozzáadjuk az eredmény listához, opcionálisan mértékegységgel
             eredmeny_list.append({
                 "Anyag": anyag,
                 "Szin": szin,
+                "URL": url_ar["url"],
                 "Mennyiseg": ertek * hulladek_arany,
                 "Mertekegyseg": mertekegyseg,
                 "Egysegar": egysegar,
@@ -142,6 +145,7 @@ class SzabasjegyzekSzerkeszto:
                 eredmeny_list.append({
                     "Anyag": "vekony_elzaro",
                     "Szin": szin,
+                    "URL": "",
                     "Mennyiseg": menyiseg_vekony,
                     "Mertekegyseg": "m",
                     "Egysegar": meterar_vekony,
@@ -155,6 +159,7 @@ class SzabasjegyzekSzerkeszto:
                 eredmeny_list.append({
                     "Anyag": "vastag_elzaro",
                     "Szin": szin,
+                    "URL": "",
                     "Mennyiseg": menyiseg_vastag,
                     "Mertekegyseg": "m",
                     "Egysegar": meterar_vastag, #Ezt kesobb modosítani kell!
