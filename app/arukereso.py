@@ -6,6 +6,7 @@ import time
 import requests
 import fitz
 import camelot
+import os
 
 class Arukereso:
     def __init__(self):
@@ -95,27 +96,47 @@ class Arukereso:
         return products[0] #Majd ez is valtoztatni kell ha tobb termeket akarok visszaadni!
 
     def borovi(self, termek_neve):
-        borovi_arlista_url = "https://www.borovigerendahazkft.hu/tools/generate_pdf"
-        pdf_path = "borovi_ar.pdf"
+        # --- 1. data mappa az app-on kívül ---
+        base_dir = os.path.dirname(__file__)  # ez: csixwood/app/
+        project_root = os.path.abspath(os.path.join(base_dir, ".."))  # -> csixwood/
+        data_dir = os.path.join(project_root, "data")  # -> csixwood/data
+        os.makedirs(data_dir, exist_ok=True)
 
-        response = requests.get(borovi_arlista_url)
+        pdf_path = os.path.join(data_dir, "borovi_ar.pdf")
+
+        # --- 2. PDF letöltése ---
+        response = requests.get("https://www.borovigerendahazkft.hu/tools/generate_pdf")
         with open(pdf_path, "wb") as f:
             f.write(response.content)
 
-        doc = fitz.open("borovi_ar.pdf")
+        print(f"✅ PDF letöltve ide: {pdf_path}")
 
+        # --- 3. PDF megnyitás és feldolgozás ---
+        doc = fitz.open(pdf_path)
         eredmenyek = {}
 
         for i, page in enumerate(doc):
             text = page.get_text("text")
 
-            # ha a cím pl. "Eladási adatok"
-            if termek_neve in text:
-                tables = camelot.read_pdf("borovi_ar.pdf", pages=str(i + 1))
-                if tables:
+            if termek_neve.lower() in text.lower():
+                print(f"🔎 Találat az {i + 1}. oldalon")
+
+                tables = camelot.read_pdf(
+                    pdf_path,
+                    pages=str(i + 1),
+                    flavor="stream",  # ez kell, mert a PDF nem rácsos
+                    strip_text="\n"
+                )
+                print(tables[0].df)
+
+                if tables and len(tables) > 0:
                     eredmenyek[termek_neve] = tables[0].df
+                    print("✅ Táblázat beolvasva!")
+                else:
+                    print("⚠️ Nem talált táblázatot ezen az oldalon.")
 
         return eredmenyek
 
-eredmenyek = Arukereso().borovi("Táblásított fenyő kistáblák")
+
+eredmenyek = Arukereso().borovi("Táblásított fenyő")
 print(eredmenyek)

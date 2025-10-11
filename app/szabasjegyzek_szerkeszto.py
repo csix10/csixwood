@@ -102,19 +102,16 @@ class SzabasjegyzekSzerkeszto:
         for _, row in osszegzes.iterrows():
             anyag = row["Anyag"]
             szin = row["Szin"]
-            alap = anyagtip.loc[anyagtip["Anyag"] == anyag, "Szamitasialap"].values
-            hulladek_arany = anyagtip.loc[anyagtip["Anyag"] == anyag, "Hulladekaranya"].values
+            alap = anyagtip.loc[anyagtip["Anyag"] == anyag, "Szamitasialap"].squeeze()
+            hulladek_arany = float(anyagtip.loc[anyagtip["Anyag"] == anyag, "Hulladekaranya"].squeeze())
             kereses_helye = anyagtip.loc[anyagtip["Anyag"] == anyag, "Beszerzeshelyes"].values
-            szep_anyagnev = anyagtip.loc[anyagtip["Anyag"] == anyag, "Anyag_szep"].values
+            szep_anyagnev = anyagtip.loc[anyagtip["Anyag"] == anyag, "Anyag_szep"].squeeze()
             if len(alap) == 0:
                 continue  # ha nincs meghatározva, kihagyjuk
 
             url_ar = self.bongeszo(szin, kereses_helye)
             print(url_ar["ar"])
             egysegar = int(url_ar["ar"][:-2].replace(".", ""))
-
-            alap = alap[0]  # pl. "Terulet" vagy "Terfogat"
-            hulladek_arany =float(hulladek_arany[0])
 
             # Kiválasztjuk az adott alaphoz tartozó oszlopot
             ertek = row.get(alap, 0)
