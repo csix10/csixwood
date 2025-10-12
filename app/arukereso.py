@@ -137,6 +137,7 @@ class Arukereso:
 
         return eredmenyek
 
-
+'''
 eredmenyek = Arukereso().borovi("Táblásított fenyő")
 print(eredmenyek)
+'''
