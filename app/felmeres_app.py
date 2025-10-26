@@ -1,7 +1,6 @@
 from kivymd.app import MDApp
 from kivymd.uix.screen import MDScreen
 from kivymd.uix.screenmanager import MDScreenManager
-from kivymd.uix.textfield import MDTextField
 from kivymd.uix.boxlayout import MDBoxLayout
 from kivymd.uix.button import MDFlatButton, MDRectangleFlatButton
 from kivymd.uix.label import MDLabel
@@ -10,8 +9,9 @@ from kivy.uix.widget import Widget
 from kivy.graphics import Color, Line, Rectangle
 from kivymd.uix.card import MDCard
 from kivy.uix.scrollview import ScrollView
-from kivy.clock import Clock
-from kivymd.uix.scrollview import MDScrollView
+from kivymd.uix.list import MDList, OneLineAvatarIconListItem, IconLeftWidget
+from kivymd.uix.textfield import MDTextField
+
 
 class RajzTabla(Widget):
     """Egyszerű rajztábla toll- és radírmóddal."""
@@ -127,6 +127,54 @@ class AppKellek:
         else:
             gomb.text = "Toll mód"
 
+    def ugyfel_kereso(self, parent, csv_path):
+        """Beolvassa az ügyfél CSV-t és létrehoz egy keresőmezőt + listát a találatokhoz."""
+        self.ugyfelek = []
+
+        # --- 1️⃣ CSV beolvasása ---
+        if os.path.exists(csv_path):
+            with open(csv_path, mode="r", encoding="latin1") as f:
+                reader = csv.DictReader(f, delimiter=';')
+                for sor in reader:
+                    if sor:  # ha nem üres
+                        self.ugyfelek.append(sor)
+        else:
+            print("⚠️ Nincs meg a fájl:", csv_path)
+            return
+
+        # --- 2️⃣ Kereső mező ---
+        keresomezo = MDTextField(
+            hint_text="Ügyfél keresése név alapján...",
+            size_hint_x=1
+        )
+        parent.add_widget(keresomezo)
+
+        # --- 3️⃣ Görgethető lista a találatoknak ---
+        scroll = ScrollView(size_hint=(1, 0.8))
+        lista = MDList()
+        scroll.add_widget(lista)
+        parent.add_widget(scroll)
+
+        # --- 4️⃣ Frissítő függvény gépeléskor ---
+        def frissit_lista(instance, value):
+            lista.clear_widgets()
+            keresett = value.strip().lower()
+            if not keresett:
+                return
+            for ugyfel in self.ugyfelek:
+                nev = ugyfel.get('Nev', '')  # CSV-ben legyen 'Név' oszlop
+                varos = ugyfel.get('Varos', '')
+                lakcim = ugyfel.get('Lakcim', '')
+
+                if keresett in nev.lower():
+                    item = OneLineAvatarIconListItem(
+                        text=f"{nev} – {varos}, {lakcim}",
+                        on_release=lambda x, u=ugyfel: print("✅ Kiválasztott:", u)
+                    )
+                    item.add_widget(IconLeftWidget(icon="account"))
+                    lista.add_widget(item)
+        keresomezo.bind(text=frissit_lista)
+
 
 # --- 1. Kezdőképernyő ---
 class KezdoScreen(MDScreen, AppKellek):
@@ -177,7 +225,17 @@ class FelmeresScreen(MDScreen, AppKellek):
         content.bind(minimum_height=content.setter("height"))
 
         # Cím
-        self.egyszeru_szoveg(content, "🏗️ Helyszíni felmérés", betustilus="H5", igazitas="center")
+        self.egyszeru_szoveg(content, "Helyszíni felmérés", betustilus="H5", igazitas="center")
+
+        #Ügyfél kereső
+        ugyfel_kartya = MDCard(orientation="vertical", padding=12, spacing=8, size_hint_y=None)
+        ugyfel_kartya.height = 250
+        self.egyszeru_szoveg(ugyfel_kartya, "Ügyfél keresés", betustilus="Subtitle1", igazitas="left")
+
+        csv_path = r"C:\Users\balin\OneDrive\csixwood program\csixwood\data\ugyfelek_adat.csv"
+
+        self.ugyfel_kereso(ugyfel_kartya, csv_path)
+        content.add_widget(ugyfel_kartya)
 
         # Projekt adatok
         adat_kartya = MDCard(orientation="vertical", padding=12, spacing=8, size_hint_y=None)
@@ -190,6 +248,7 @@ class FelmeresScreen(MDScreen, AppKellek):
         # Anyag / Szín sor
         self.egyszeru_szoveg(content, "Anyag és szín", betustilus="Subtitle1", igazitas="left")
         adat_sor = MDBoxLayout(orientation="horizontal", spacing=10, size_hint_y=None, height=60)
+        adat_sor.height=100
         self.anyag = self.szoveg_input(adat_sor, "Anyag")
         self.szin = self.szoveg_input(adat_sor, "Szín")
         content.add_widget(adat_sor)
@@ -200,46 +259,72 @@ class FelmeresScreen(MDScreen, AppKellek):
 
         # Alsó gombsor
         gombsor = MDBoxLayout(size_hint_y=None, height=64, spacing=10, padding=[0,6])
-        self.gomb(gombsor, "💾 Mentés", lambda x: self._mentes_png())
-        self.gomb(gombsor, "⬅️ Vissza", lambda x: setattr(self.manager, "current", "kezdo"))
+        self.gomb(gombsor, "Mentés", lambda x: self._mentes_png())
+        self.gomb(gombsor, "Vissza", lambda x: setattr(self.manager, "current", "kezdo"))
         content.add_widget(gombsor)
 
         self.scroll.add_widget(content)
         self.add_widget(self.scroll)
 
     def _rajz_kartya(self, parent, cim, rajz_attr, magyarazat_attr):
+        """Létrehoz egy rajzkártyát rajztáblával, magyarázó mezővel és rajzoló/görgető gombbal."""
         kartya = MDCard(orientation="vertical", padding=12, spacing=8, size_hint_y=None)
-        kartya.height = 400  # egy kicsit nagyobb, hogy legyen hely a gomboknak
         kartya.md_bg_color = (1, 1, 1, 1)
 
-        self.egyszeru_szoveg(kartya, cim, betustilus="Subtitle1", igazitas="left")
+        # Rajztábla mérete
+        rajz_magassag = 800
+        kartya.height = rajz_magassag + 250  # kicsit nagyobb, hogy a gombok is elférjenek
+
+        # Cím
+        cim_label = MDLabel(
+            text=cim,
+            halign="left",
+            font_style="Subtitle1",
+            size_hint_y=None,
+            height=30
+        )
+        kartya.add_widget(cim_label)
 
         # Rajztábla
-        rajz = self.rajztabla(kartya)
+        rajz = RajzTabla(size_hint=(1, None), height=rajz_magassag)
+        kartya.add_widget(rajz)
         setattr(self, rajz_attr, rajz)
+
+        # Rajztábla gombok (Radír / Törlés)
+        gomb_sor = MDBoxLayout(orientation="horizontal", size_hint_y=None, height=40, spacing=10)
+        mod_gomb = MDFlatButton(
+            text="Radír mód",
+            on_release=lambda x: self._valt_mod(rajz, mod_gomb)
+        )
+        gomb_sor.add_widget(mod_gomb)
+
+        torles_gomb = MDFlatButton(
+            text="Törlés",
+            on_release=lambda x: rajz.torles()
+        )
+        gomb_sor.add_widget(torles_gomb)
+        kartya.add_widget(gomb_sor)
+
+        # Rajzolás engedélyezése / görgetés visszaállítása
+        kapcsolo_sor = MDBoxLayout(orientation="horizontal", size_hint_y=None, height=40, spacing=10)
+        rajz_gomb = MDRectangleFlatButton(
+            text="Rajzolás engedélyezése",
+            on_release=lambda x, r=rajz: self._rajz_mod(r)
+        )
+        kapcsolo_sor.add_widget(rajz_gomb)
+
+        vissza_gomb = MDRectangleFlatButton(
+            text="Görgetés engedélyezése",
+            on_release=lambda x, r=rajz: self._scroll_mod(r)
+        )
+        kapcsolo_sor.add_widget(vissza_gomb)
+
+        kartya.add_widget(kapcsolo_sor)
 
         # Magyarázó mező
         magy = self.szoveg_input(kartya, "Magyarázat", meret=1)
         setattr(self, magyarazat_attr, magy)
 
-        # Gombok
-        gomb_sor = MDBoxLayout(orientation="horizontal", spacing=10, size_hint_y=None, height=40)
-
-        # Rajzolás engedélyezése
-        rajzol_gomb = MDRectangleFlatButton(
-            text="Rajzolás engedélyezése",
-            on_release=lambda x, r=rajz: self._rajz_mod(r)
-        )
-        gomb_sor.add_widget(rajzol_gomb)
-
-        # Scroll mód engedélyezése
-        scroll_gomb = MDRectangleFlatButton(
-            text="Görgetés engedélyezése",
-            on_release=lambda x, r=rajz: self._scroll_mod(r)
-        )
-        gomb_sor.add_widget(scroll_gomb)
-
-        kartya.add_widget(gomb_sor)
         parent.add_widget(kartya)
 
     def _scroll_mod(self, rajz):
