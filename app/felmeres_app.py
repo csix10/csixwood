@@ -11,6 +11,13 @@ from kivymd.uix.card import MDCard
 from kivy.uix.scrollview import ScrollView
 from kivymd.uix.list import MDList, OneLineAvatarIconListItem, IconLeftWidget
 from kivymd.uix.textfield import MDTextField
+from kivy.uix.image import Image
+from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.anchorlayout import AnchorLayout
+from kivymd.toast import toast
+from plyer import camera
+import shutil
+
 
 
 class RajzTabla(Widget):
@@ -94,6 +101,12 @@ class AppKellek:
         parent.add_widget(gomb)
         return gomb
 
+    def szekcio_cim(self, patern, cim):
+        self.egyszeru_szoveg(patern, cim, betustilus="H6", igazitas="left")  # Kiemelt szekció cím
+        patern.add_widget(
+            MDBoxLayout(height=1, md_bg_color=[0.8, 0.8, 0.8, 1], size_hint_y=None))  # Elválasztó vonal
+        patern.add_widget(MDBoxLayout(height=8, size_hint_y=None))  # Kisebb térköz
+
     def rajztabla(self, parent):
         box = MDBoxLayout(orientation="vertical", spacing=10)
 
@@ -175,6 +188,63 @@ class AppKellek:
                     lista.add_widget(item)
         keresomezo.bind(text=frissit_lista)
 
+    def logo(self, parent):
+        # Középre helyező layout
+        logo_box = AnchorLayout(anchor_x='center', anchor_y='bottom', size_hint_y=None, height=220)
+
+        logo = Image(
+            source="C:/Users/balin/OneDrive/csixwood program/csixwood/data/logo_nevvel.png",
+            size_hint=(None, None),
+            size=(200, 200),
+            fit_mode="contain"
+        )
+
+        logo_box.add_widget(logo)
+        parent.add_widget(logo_box)
+
+    def foto_keszites(self, parent):
+        """Kamera megnyitása és kép megjelenítése az appban."""
+        foto_box = BoxLayout(orientation="vertical", spacing=10, size_hint_y=None, height=400)
+
+        # Kép helye
+        self.foto_image = Image(source="", size_hint=(1, 1), keep_ratio=True)
+        foto_box.add_widget(self.foto_image)
+
+        # Gomb a fényképezéshez
+        foto_gomb = MDRectangleFlatButton(
+            text="Fénykép készítése",
+            pos_hint={"center_x": 0.5},
+            on_release=lambda x: self._keszit_foto()
+        )
+        foto_box.add_widget(foto_gomb)
+
+        parent.add_widget(foto_box)
+
+    def _keszit_foto(self):
+        """Kép készítése az eszköz kamerájával."""
+        try:
+            # Mentés helye
+            mappa = os.path.join(os.getcwd(), "kepek")
+            os.makedirs(mappa, exist_ok=True)
+            kep_utvonal = os.path.join(mappa, "felmeres_foto.jpg")
+
+            # Kamera megnyitása és mentés, ezt majd le kell cserélni!!
+            #camera.take_picture(filename=kep_utvonal, on_complete=self._mutat_foto)
+
+            shutil.copy("C:/Users/balin/OneDrive/csixwood program/csixwood/data/logo_nevvel.png", kep_utvonal)
+            self._mutat_foto(kep_utvonal)
+
+        except Exception as e:
+            toast(f"Hiba a kamera megnyitásakor: {e}")
+
+    def _mutat_foto(self, path):
+        """A készített fotó megjelenítése az Image widgetben."""
+        if path and os.path.exists(path):
+            self.foto_image.source = path
+            self.foto_image.reload()
+            toast("Kép mentve és betöltve!")
+        else:
+            toast("Nem készült kép vagy a fájl nem található.")
 
 # --- 1. Kezdőképernyő ---
 class KezdoScreen(MDScreen, AppKellek):
@@ -192,19 +262,104 @@ class KezdoScreen(MDScreen, AppKellek):
 # --- 2. Új ügyfél képernyő ---
 class UgyfelScreen(MDScreen, AppKellek):
     def on_pre_enter(self, *args):
-        self.clear_widgets()
-        layout = MDBoxLayout(orientation="vertical", spacing=10, padding=40)
+        # Alapértelmezett háttérszín beállítása a képernyőn (opcionális)
+        self.md_bg_color = [0.95, 0.95, 0.95, 1]  # Világos szürke háttér a kártyák kiemeléséhez
 
-        self.nev = self.szoveg_input(layout, "Név")
-        self.cim = self.szoveg_input(layout, "Cím")
-        self.tel = self.szoveg_input(layout, "Telefonszám")
-        self.email = self.szoveg_input(layout, "Email")
+        self.scroll = ScrollView(size_hint=(1, 1))
+        # Növeltük a külső margót a jobb áttekinthetőségért
+        content = MDBoxLayout(orientation="vertical", spacing=16, padding=16, size_hint_y=None)
+        content.bind(minimum_height=content.setter("height"))
 
-        self.gomb(layout, "Mentés", self.mentes)
-        self.gomb(layout, "Vissza", lambda x: setattr(self.manager, "current", "kezdo"))
+        # 1. Cím és logó kártya
+        # Egyszerűbb, de kiemelt cím
+        cim_kartya = MDCard(
+            orientation="vertical",
+            padding=16, # Kicsit több belső térköz
+            spacing=10,
+            size_hint_y=None,
+            adaptive_height=True,
+            line_color=(0, 0, 0, 0), # Nincs vonal, ha zavaró lenne
+            elevation=0
+        )
+        self.logo(cim_kartya)
+        cim_kartya.add_widget(MDBoxLayout(height=8, size_hint_y=None))
+        cim_label = MDLabel(
+            text="Új megrendelő",
+            halign="center",
+            font_style="H5",
+            bold=True
+        )
+        cim_kartya.add_widget(cim_label)
 
+        content.add_widget(cim_kartya)
 
-        self.add_widget(layout)
+        # 2. Személyes adatok kártya
+        adat_kartya = MDCard(
+            orientation="vertical",
+            padding=16,
+            spacing=10,
+            size_hint_y=None,
+            adaptive_height=True,
+            elevation=0
+        )
+        # Szekció cím bevezetése (kicsit eltérő betűstílus)
+        self.szekcio_cim(adat_kartya,"Személyes adatok")
+
+        # Név mező
+        self.egyszeru_szoveg(adat_kartya, "Teljes név", betustilus="Subtitle2", igazitas="left")
+        self.nev = self.szoveg_input(adat_kartya, "Név")
+
+        # Lakcím szekció
+        self.egyszeru_szoveg(adat_kartya, "Lakcím", betustilus="Subtitle2", igazitas="left")
+
+        # Város és Utca egy sorban
+        szovegsor = MDBoxLayout(size_hint_y=None, height=64, spacing=10)
+        self.varos = self.szoveg_input(szovegsor, "Város")
+        self.cim = self.szoveg_input(szovegsor, "Utca, házszám")
+        adat_kartya.add_widget(szovegsor)
+
+        # Emelet, ajtó stb.
+        self.emelet_ajto = self.szoveg_input(adat_kartya, "Emelet, ajtó, csengő (opcionális)")
+        content.add_widget(adat_kartya)
+
+        # 3. Elérhetőségek kártya
+        elerhetoseg_kartya = MDCard(
+            orientation="vertical",
+            padding=16,
+            spacing=10,
+            size_hint_y=None,
+            adaptive_height=True,
+            elevation=0
+        )
+        # Szekció cím bevezetése
+        self.szekcio_cim(elerhetoseg_kartya, "Elérhetőségek")
+
+        # Telefonszám
+        self.egyszeru_szoveg(elerhetoseg_kartya, "Telefonszám", betustilus="Subtitle2", igazitas="left")
+        self.tel = self.szoveg_input(elerhetoseg_kartya, "Telefonszám (pl. +36 30 123 4567)")
+
+        # Email
+        self.egyszeru_szoveg(elerhetoseg_kartya, "Email", betustilus="Subtitle2", igazitas="left")
+        self.email = self.szoveg_input(elerhetoseg_kartya, "Email cím")
+        content.add_widget(elerhetoseg_kartya)
+
+        # 4. Gombok kártya
+        gomb_kartya = MDCard(
+            orientation="vertical",
+            padding=16,
+            spacing=10,
+            size_hint_y=None,
+            adaptive_height=True,
+            elevation=0
+        )
+        gomb_sor = MDBoxLayout(size_hint_y=None, height=48, spacing=10)
+        self.gomb(gomb_sor, "Mentés", self.mentes)
+        self.gomb(gomb_sor, "Vissza", lambda x: setattr(self.manager, "current", "kezdo"))
+        gomb_kartya.add_widget(gomb_sor)
+        content.add_widget(gomb_kartya)
+
+        self.scroll.add_widget(content)
+        self.add_widget(self.scroll)
 
     def mentes(self, instance):
         path = os.path.expanduser("C:/Users/balin/OneDrive/asztalos_adatok/ugyfelek.csv")
@@ -215,58 +370,177 @@ class UgyfelScreen(MDScreen, AppKellek):
         print("Ügyfél elmentve:", self.nev.text)
         self.manager.current = "kezdo"
 
+
+from kivymd.uix.label import MDLabel  # A félkövér szöveghez
+from kivymd.uix.boxlayout import MDBoxLayout
+from kivymd.uix.card import MDCard
+from kivymd.uix.screen import MDScreen
+from kivy.uix.scrollview import ScrollView
+
+
 class FelmeresScreen(MDScreen, AppKellek):
     def on_pre_enter(self, *args):
         self.clear_widgets()
 
+        # Alapértelmezett háttérszín beállítása
+        self.md_bg_color = [0.95, 0.95, 0.95, 1]  # Világos szürke háttér
+
         # --- ScrollView az egész tartalomhoz ---
-        self.scroll = ScrollView(size_hint=(1,1))
-        content = MDBoxLayout(orientation="vertical", spacing=12, padding=12, size_hint_y=None)
+        self.scroll = ScrollView(size_hint=(1, 1))
+        # Növeltük a külső margót a jobb áttekinthetőségért (16)
+        content = MDBoxLayout(orientation="vertical", spacing=16, padding=16, size_hint_y=None)
         content.bind(minimum_height=content.setter("height"))
 
-        # Cím
-        self.egyszeru_szoveg(content, "Helyszíni felmérés", betustilus="H5", igazitas="center")
+        # 1. Cím és logó kártya
+        cim_kartya = MDCard(
+            orientation="vertical",
+            padding=16,  # Növelt padding
+            spacing=10,
+            size_hint_y=None,
+            adaptive_height=True,  # Rugalmas magasság
+            line_color=(0, 0, 0, 0),
+            elevation=0
+        )
+        # Töröltem a cim_kartya.height = 300 fix beállítást.
+        self.logo(cim_kartya)
+        cim_kartya.add_widget(MDBoxLayout(height=8, size_hint_y=None))
 
-        #Ügyfél kereső
-        ugyfel_kartya = MDCard(orientation="vertical", padding=12, spacing=8, size_hint_y=None)
-        ugyfel_kartya.height = 250
-        self.egyszeru_szoveg(ugyfel_kartya, "Ügyfél keresés", betustilus="Subtitle1", igazitas="left")
+        # Félkövér cím (MDLabel-t használva a bold=True miatt, ha az egyszerű_szöveg nem támogatja)
+        try:
+            # Feltételezve, hogy a self.egyszeru_szoveg támogatja a bold paramétert
+            self.egyszeru_szoveg(cim_kartya, "Helyszíni felmérés", betustilus="H5", igazitas="center", bold=True)
+        except:
+            # Ha nem támogatja, használjunk MDLabel-t:
+            cim_label = MDLabel(
+                text="Helyszíni felmérés",
+                halign="center",
+                font_style="H5",
+                bold=True
+            )
+            cim_kartya.add_widget(cim_label)
+
+        content.add_widget(cim_kartya)
+
+        # 2. Ügyfél kereső kártya (BŐSÉGES HELY A TALÁLATOKNAK)
+        ugyfel_kartya = MDCard(
+            orientation="vertical",
+            padding=16,  # Növelt padding
+            spacing=10,
+            size_hint_y=None,
+            adaptive_height=False,  # **Fontos:** Ezt NE állítsuk True-ra, hogy legyen hely a találatoknak
+            height=300,  # **Nagyobb fix magasság** a keresési találatoknak (pl. 300)
+            elevation=0
+        )
+
+        self.szekcio_cim(ugyfel_kartya, "Ügyfél keresés")
 
         csv_path = r"C:\Users\balin\OneDrive\csixwood program\csixwood\data\ugyfelek_adat.csv"
-
         self.ugyfel_kereso(ugyfel_kartya, csv_path)
+
         content.add_widget(ugyfel_kartya)
 
-        # Projekt adatok
-        adat_kartya = MDCard(orientation="vertical", padding=12, spacing=8, size_hint_y=None)
-        adat_kartya.height = 120
-        adat_kartya.md_bg_color = (0.97,0.97,0.97,1)
-        self.egyszeru_szoveg(adat_kartya, "Projekt adatai", betustilus="Subtitle1", igazitas="left")
-        self.cim = self.szoveg_input(adat_kartya, "Projekt neve")
-        content.add_widget(adat_kartya)
+        # 3. Projekt adatok kártya
+        adat_kartya = MDCard(
+            orientation="vertical",
+            padding=16,  # Növelt padding
+            spacing=10,
+            size_hint_y=None,
+            adaptive_height=True,  # Rugalmas magasság
+            elevation=0
+        )
+        # Töröltem az adat_kartya.height = 240 fix beállítást.
 
-        # Anyag / Szín sor
-        self.egyszeru_szoveg(content, "Anyag és szín", betustilus="Subtitle1", igazitas="left")
-        adat_sor = MDBoxLayout(orientation="horizontal", spacing=10, size_hint_y=None, height=60)
-        adat_sor.height=100
+        # Projekt adatok szekció
+        self.szekcio_cim(adat_kartya, "Projekt adatai")
+
+        self.egyszeru_szoveg(adat_kartya, "Projekt neve", betustilus="Subtitle2", igazitas="left")
+        self.cim = self.szoveg_input(adat_kartya, "Projekt neve")
+
+        # Anyag és szín szekció
+        self.egyszeru_szoveg(adat_kartya, "Anyag és szín", betustilus="Subtitle2", igazitas="left")
+        adat_sor = MDBoxLayout(orientation="horizontal", spacing=10, size_hint_y=None, height=64)  # Igazított magasság
+        # Töröltem az adat_sor.height=100 fix beállítást.
         self.anyag = self.szoveg_input(adat_sor, "Anyag")
         self.szin = self.szoveg_input(adat_sor, "Szín")
-        content.add_widget(adat_sor)
+        adat_kartya.add_widget(adat_sor)
+        content.add_widget(adat_kartya)
 
-        # Rajztáblák
-        self._rajz_kartya(content, "Első rajz", rajz_attr="rajz_1", magyarazat_attr="magy_1")
-        self._rajz_kartya(content, "Második rajz", rajz_attr="rajz_2", magyarazat_attr="magy_2")
+        # 4. Rajztáblák Szekció
+        # Csináljunk a Rajzoknak egy külön kártyát a jobb elkülönítésért
+        rajzok_kartya = MDCard(
+            orientation="vertical",
+            padding=16,
+            spacing=10,
+            size_hint_y=None,
+            adaptive_height=True,
+            elevation=0
+        )
 
-        # Alsó gombsor
-        gombsor = MDBoxLayout(size_hint_y=None, height=64, spacing=10, padding=[0,6])
+        self.szekcio_cim(rajzok_kartya, "Rajzok és Dokumentáció")
+
+        self.rajz_hivasok_szama = 1
+        # Az _rajz_kartya_beszuras hívásokat most a rajzok_kartya-ra hívjuk
+        self._rajz_kartya_beszuras(rajzok_kartya, f"{self.rajz_hivasok_szama}. rajz",
+                                   rajz_attr=f"rajz_{self.rajz_hivasok_szama}",
+                                   magyarazat_attr=f"magy_{self.rajz_hivasok_szama}",
+                                   pozicio=self.rajz_hivasok_szama + 2)
+
+        # A gomb is a rajzok_kartya-ba kerül (jobb UI design)
+        rajz_gomb_sor = MDBoxLayout(size_hint_y=None, height=48, spacing=10)
+        self.gomb(rajz_gomb_sor, "Új rajz hozzáadása",
+                  lambda x: self._rajz_kartya_beszuras(rajzok_kartya, f"{self.rajz_hivasok_szama}. rajz",
+                                                       rajz_attr=f"rajz_{self.rajz_hivasok_szama}",
+                                                       magyarazat_attr=f"magy_{self.rajz_hivasok_szama}",
+                                                       pozicio=self.rajz_hivasok_szama + 2))
+        rajzok_kartya.add_widget(rajz_gomb_sor)
+
+        content.add_widget(rajzok_kartya)
+
+        # 5. Fotók Szekció
+        fotok_kartya = MDCard(
+            orientation="vertical",
+            padding=16,
+            spacing=10,
+            size_hint_y=None,
+            adaptive_height=True,
+            elevation=0
+        )
+        self.szekcio_cim(fotok_kartya, "Helyszíni fotók")
+
+        # A target_box a fotok_kartya része lesz
+        self.target_box = MDBoxLayout(orientation="vertical", spacing=10, padding=0)
+        fotok_kartya.add_widget(self.target_box)
+
+        self.foto_hivasok_szama = 1
+
+        # A gomb is a fotok_kartya-ba kerül
+        foto_gomb_sor = MDBoxLayout(size_hint_y=None, height=48, spacing=10)
+        self.gomb(foto_gomb_sor, "Új fotó hozzáadása", lambda x: self._foto_kartya_beszurasa(self.target_box,
+                                                                                             pozicio=self.foto_hivasok_szama))
+
+        fotok_kartya.add_widget(foto_gomb_sor)
+
+        content.add_widget(fotok_kartya)
+
+        # 6. Alsó gombsor
+        gomb_kartya = MDCard(
+            orientation="vertical",
+            padding=16,
+            spacing=10,
+            size_hint_y=None,
+            adaptive_height=True,
+            elevation=0
+        )
+        gombsor = MDBoxLayout(size_hint_y=None, height=48, spacing=10)  # Igazított magasság
         self.gomb(gombsor, "Mentés", lambda x: self._mentes_png())
         self.gomb(gombsor, "Vissza", lambda x: setattr(self.manager, "current", "kezdo"))
-        content.add_widget(gombsor)
+        gomb_kartya.add_widget(gombsor)
+        content.add_widget(gomb_kartya)
 
         self.scroll.add_widget(content)
         self.add_widget(self.scroll)
 
-    def _rajz_kartya(self, parent, cim, rajz_attr, magyarazat_attr):
+    def _rajz_kartya_beszuras(self, parent, cim, rajz_attr, magyarazat_attr, pozicio):
         """Létrehoz egy rajzkártyát rajztáblával, magyarázó mezővel és rajzoló/görgető gombbal."""
         kartya = MDCard(orientation="vertical", padding=12, spacing=8, size_hint_y=None)
         kartya.md_bg_color = (1, 1, 1, 1)
@@ -276,6 +550,7 @@ class FelmeresScreen(MDScreen, AppKellek):
         kartya.height = rajz_magassag + 250  # kicsit nagyobb, hogy a gombok is elférjenek
 
         # Cím
+        '''
         cim_label = MDLabel(
             text=cim,
             halign="left",
@@ -284,6 +559,8 @@ class FelmeresScreen(MDScreen, AppKellek):
             height=30
         )
         kartya.add_widget(cim_label)
+        '''
+        self.szekcio_cim(kartya, cim)
 
         # Rajztábla
         rajz = RajzTabla(size_hint=(1, None), height=rajz_magassag)
@@ -325,7 +602,16 @@ class FelmeresScreen(MDScreen, AppKellek):
         magy = self.szoveg_input(kartya, "Magyarázat", meret=1)
         setattr(self, magyarazat_attr, magy)
 
-        parent.add_widget(kartya)
+        # Ha a pozíció nagyobb, mint a meglévő widgetek száma, tegyük a végére
+        pozicio = min(pozicio, len(parent.children))
+
+        # ⚠️ Fontos: a Kivy a children listát fordítva tárolja!
+        # Azaz: a vizuálisan „első” elem valójában a lista végén van.
+        valodi_index = len(parent.children) - pozicio
+
+        self.rajz_hivasok_szama += 1
+
+        parent.add_widget(kartya, index=valodi_index)
 
     def _scroll_mod(self, rajz):
         """Visszaállítja a ScrollView-t, rajzolás tiltva."""
@@ -343,6 +629,43 @@ class FelmeresScreen(MDScreen, AppKellek):
         rajz.color = (0, 0, 0)
         rajz.width_line = 2
         print("Rajzoló mód engedélyezve. Görgetés letiltva.")
+
+    def _foto_kartya_beszurasa(self, parent, pozicio=0):
+        """Új fotókártyát szúr be a parent layoutba a megadott pozícióra."""
+
+        foto_kartya = MDCard(
+            orientation="vertical",
+            padding=12,
+            spacing=8,
+            size_hint_y=None
+        )
+        foto_kartya.height = 500
+
+        '''
+        cim_label = MDLabel(
+            text=f"{self.foto_hivasok_szama}. fotó",
+            halign="left",
+            font_style="Subtitle1",
+            size_hint_y=None,
+            height=30
+        )
+        foto_kartya.add_widget(cim_label)
+        '''
+        self.szekcio_cim(foto_kartya,f"{self.foto_hivasok_szama}. fotó")
+        self.foto_keszites(foto_kartya)
+
+        self.foto_hivasok_szama += 1
+
+        # Ha a pozíció nagyobb, mint a meglévő widgetek száma, tegyük a végére
+        pozicio = min(pozicio, len(parent.children))
+
+        # ⚠️ Fontos: a Kivy a children listát fordítva tárolja!
+        # Azaz: a vizuálisan „első” elem valójában a lista végén van.
+        valodi_index = len(parent.children) - pozicio
+
+        parent.add_widget(foto_kartya, index=valodi_index)
+
+        print(f" Új fotókártya beszúrva a {pozicio}. pozícióra (valódi index: {valodi_index})")
 
     def _mentes_png(self):
         mappa = "C:/Users/csiki/OneDrive/asztalos_adatok/rajzok"
