@@ -84,8 +84,10 @@ class Arukereso:
             except:
                 webshop_link = None
 
+            print(adatok)
+
             products.append({
-                "nev": adatok[7],
+                "nev": termek_neve,
                 "url": webshop_link,
                 "ar": adatok[4][:-3]
             })

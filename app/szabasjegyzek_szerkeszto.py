@@ -77,7 +77,7 @@ class SzabasjegyzekSzerkeszto:
     def bongeszo(self, nev, hely):
         if hely == "Butorkellek":
             return self.kereso.butorkellek(nev)
-        elif hely == "Karnis":
+        #elif hely == "Karnis":
             return self.kereso.karnis(nev)
         else:
             return { "nev": "",
@@ -103,11 +103,12 @@ class SzabasjegyzekSzerkeszto:
             anyag = row["Anyag"]
             szin = row["Szin"]
             alap = anyagtip.loc[anyagtip["Anyag"] == anyag, "Szamitasialap"].squeeze()
-            hulladek_arany = float(anyagtip.loc[anyagtip["Anyag"] == anyag, "Hulladekaranya"].squeeze())
-            kereses_helye = anyagtip.loc[anyagtip["Anyag"] == anyag, "Beszerzeshelyes"].values
-            szep_anyagnev = anyagtip.loc[anyagtip["Anyag"] == anyag, "Anyag_szep"].squeeze()
             if len(alap) == 0:
                 continue  # ha nincs meghatározva, kihagyjuk
+            hulladek_arany = float(anyagtip.loc[anyagtip["Anyag"] == anyag, "Hulladekaranya"].iloc[0])
+            kereses_helye = anyagtip.loc[anyagtip["Anyag"] == anyag, "Beszerzeshelyes"].values
+            szep_anyagnev = anyagtip.loc[anyagtip["Anyag"] == anyag, "Anyag_szep"].squeeze()
+
 
             url_ar = self.bongeszo(szin, kereses_helye)
             print(url_ar["ar"])
