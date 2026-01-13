@@ -3,6 +3,9 @@ import tkinter as tk
 from tkinter import filedialog
 import os
 from openpyxl import load_workbook
+from pathlib import Path
+import requests
+from io import BytesIO
 
 class BeolvasKiirat:
     def __init__(self):
@@ -73,4 +76,61 @@ class BeolvasKiirat:
         wb.save(fajl_ut)
         print(f"✅ Fájl sikeresen mentve ide: {fajl_ut}")
 
+    def excel_beolvas_df(self, ut: str | Path, munkalap: str | int = 0) -> pd.DataFrame:
+        """
+        Excel beolvasása DataFrame-be.
+
+        Paraméterek:
+          - ut: .xlsx/.xlsm fájl elérési útja (pl. r"C:\\Users\\csiki\\OneDrive\\valami.xlsx")
+          - munkalap: munkalap neve (str) vagy indexe (int). Alap: 0 (első lap)
+        """
+        ut = Path(ut)
+
+        if not ut.exists():
+            raise FileNotFoundError(f"Nem találom az Excel fájlt: {ut.resolve()}")
+
+        df = pd.read_excel(ut, sheet_name=munkalap, engine="openpyxl")
+        return df
+
+    def excel_beolvas_onedrive_linkbol(
+            self,
+            megosztasi_link: str,
+            cel_mappa: str | Path = "data",
+            fajlnev: str = "onedrive_excel.xlsx",
+            sheet_name=0,
+            **kwargs
+    ) -> pd.DataFrame:
+        """
+        OneDrive Excel letöltése fájlba, majd beolvasás DataFrame-be.
+        (Ez kikerüli az xlrd hibát Python 3.12 alatt)
+        """
+
+        cel_mappa = Path(cel_mappa)
+        cel_mappa.mkdir(parents=True, exist_ok=True)
+        fajl_ut = cel_mappa / fajlnev
+
+        # Direkt letöltési link
+        if "?download=" not in megosztasi_link:
+            if "?" in megosztasi_link:
+                download_url = megosztasi_link.split("?")[0] + "?download=1"
+            else:
+                download_url = megosztasi_link + "?download=1"
+        else:
+            download_url = megosztasi_link
+
+        # Letöltés fájlba
+        r = requests.get(download_url)
+        r.raise_for_status()
+
+        with open(fajl_ut, "wb") as f:
+            f.write(r.content)
+
+        df = pd.read_excel(
+            fajl_ut,
+            engine="openpyxl",
+            sheet_name=sheet_name,
+            **kwargs
+        )
+
+        return df
 

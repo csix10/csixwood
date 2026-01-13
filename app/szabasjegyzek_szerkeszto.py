@@ -76,9 +76,21 @@ class SzabasjegyzekSzerkeszto:
 
     def bongeszo(self, nev, hely):
         if hely == "Butorkellek":
-            return self.kereso.butorkellek(nev)
-        #elif hely == "Karnis":
-            return self.kereso.karnis(nev)
+            adatok = self.kereso.butorkellek(nev)
+            if not adatok:
+                return { "nev": "",
+                "url": "",
+                "ar": "0 ft"}
+            else:
+                return adatok
+        elif hely == "Karnis":
+            adatok = self.kereso.karnis(nev)
+            if not adatok:
+                return { "nev": "",
+                "url": "",
+                "ar": "0 ft"}
+            else:
+                return adatok
         else:
             return { "nev": "",
                 "url": "",
@@ -112,7 +124,7 @@ class SzabasjegyzekSzerkeszto:
 
             url_ar = self.bongeszo(szin, kereses_helye)
             print(url_ar["ar"])
-            egysegar = int(url_ar["ar"][:-2].replace(".", ""))
+            egysegar = int(url_ar["ar"][:-3].replace(".", ""))
 
             # Kiválasztjuk az adott alaphoz tartozó oszlopot
             ertek = row.get(alap, 0)

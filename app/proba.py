@@ -86,6 +86,3 @@ def borovi(termek_neve):
     else:
         print("⚠️ Nem talált táblázatot a megadott cím utáni szakaszban.")
         return {}
-
-# --- Tesztelés ---
-print(borovi("Táblásított fenyő"))

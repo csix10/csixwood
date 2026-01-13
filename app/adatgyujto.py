@@ -86,14 +86,53 @@ class Utdij_kalkulator:
         self.autoamortizacio_per_km = autoamortizacio_per_km
 
         self.ev = datetime.now().year
-        self.nav_url = f"https://nav.gov.hu/ugyfeliranytu/uzemanyag/{self.ev}-ben-alkalmazhato-uzemanyagarak"
 
         self.NOMINATIM_URL = "https://nominatim.openstreetmap.org/search"
         self.OSRM_URL = "https://router.project-osrm.org/route/v1/driving/{lon1},{lat1};{lon2},{lat2}"
         self.HEADERS = {"User-Agent": "asztalos-arajanlat/1.0"}
+        self.nav_url = ""
+
+    def nav_uzemanyag_url(self, ev: int, timeout: int = 10) -> str | None:
+        base_list = "https://nav.gov.hu/ugyfeliranytu/uzemanyag"
+        session = requests.Session()
+        headers = {"User-Agent": "Mozilla/5.0"}
+
+        def is_soft_404(html: str) -> bool:
+            h = html.lower()
+            # NAV 404 oldal tipikus szövegei
+            return ("nem található" in h) or ("az ön által kért oldal" in h)
+
+        # 1) Gyűjtőoldal letöltése
+        try:
+            r = session.get(base_list, timeout=timeout, headers=headers)
+            r.raise_for_status()
+        except requests.RequestException:
+            return None
+
+        # 2) Link kinyerése a HTML-ből (ban/ben mindkettő jó)
+        m = re.search(
+            rf'href="(/ugyfeliranytu/uzemanyag/{ev}-(?:ban|ben)-alkalmazhato-uzemanyagarak)"',
+            r.text
+        )
+        if not m:
+            return None
+
+        url = "https://nav.gov.hu" + m.group(1)
+
+        # 3) Soft-404 ellenőrzés a céloldalon
+        try:
+            r2 = session.get(url, timeout=timeout, headers=headers, allow_redirects=True)
+            if r2.status_code != 200:
+                return None
+            if is_soft_404(r2.text):
+                return None
+            self.nav_url=r2.url
+            return r2.url  # végleges (redirect utáni) URL
+        except requests.RequestException:
+            return None
 
     def nav_uzemanyag_arlista(self):
-        r = requests.get(self.nav_url)
+        r = requests.get(self.nav_uzemanyag_url(self.ev))
         r.raise_for_status()
         soup = BeautifulSoup(r.text, "html.parser")
 

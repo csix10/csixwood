@@ -5,8 +5,10 @@ vekony_elzaro;Vékony élzáró;Osz_Hosz;1.1;Karnis
 munkalap;Munkalap;Osz_Hosz;1.1;Karnis
 borovi fenyo;Borovi fenyő;Terfogat;2;Borovi
 lucfenyo;Lucfenyő;Terfogat;2;Borovi
+dio;Dió;Terfogat;2;Borovi
 tablasitott borovi;Táblásitott borovi;Terulet;1.5;Borovi
 tablasitott luc;Táblásitott luc;Terulet;1.5;Borovi
+tablasitott tolgy;Táblásitott tölgy;Terulet;1.5;Borovi
 tolgy;Tölgy;Terfogat;2;Borovi
 bukk;Bükk;Terfogat;2;Borovi
 retegelt lemez;Rétegelt lemez;Terulet;1.5;Borovi
@@ -17,4 +19,6 @@ fogantyu;Fogantyú;DB;1;Butorkellek
 kotoelem;Kötőelem;DB;1;Butorkellek
 lab;Bútorláb;DB;1;Butorkellek
 pant;Kivetőpánt;DB;1;Butorkellek
-macskaajto; Macska ajtó;BD;1;-
+macskaajto;Macska ajtó;BD;1;-
+kilincs;Kilincs;BD;1;-
+sin;Sín;DB;-

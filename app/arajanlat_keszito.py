@@ -74,7 +74,7 @@ class Arajanlat:
 
         self.ws.add_image(kep, cella)
 
-    def szemelyes_adatok(self):
+    def szemelyes_adatok_jotform(self):
         if self.vezetek_nev == "" and self.kereszt_nev == "":
             print("Nincs név megadva, a személyes adatok nem lettek beírva!")
             return
@@ -91,6 +91,39 @@ class Arajanlat:
             cim = f"{city}, {addr1} {addr2}".strip(", ").strip() # csak akkor rakjon vesszőt, ha van város
 
             center_align = stilus.Alignment(horizontal="left", vertical="center",  wrap_text=True)
+
+            self.ws["G9"] = self.vezetek_nev + " " + self.kereszt_nev
+            self.ws["G9"].alignment = center_align
+
+            self.ws["G10"] = tel
+            self.ws["G10"].alignment = center_align
+
+            self.ws["G11"] = email
+            self.ws["G11"].alignment = center_align
+
+            self.ws["G12"] = cim
+            self.ws["G12"].alignment = center_align
+
+    def szemelyes_adatok_onedrive(self):
+        if self.vezetek_nev == "" and self.kereszt_nev == "":
+            print("Nincs név megadva, a személyes adatok nem lettek beírva!")
+            return
+
+        link = "https://1drv.ms/x/c/595ECD328626FCDE/IQCAAzRsxtjJRJhSfNq79RZ8AWpcUCbT_AV30IeTavTymUc?e=lrUfMC"
+        ugyfel = faj.BeolvasKiirat().excel_beolvas_onedrive_linkbol(megosztasi_link=link, cel_mappa="data", fajlnev="ugyfelek_adat.xlsx")
+        nev = self.vezetek_nev + " " + self.kereszt_nev
+        adat = ugyfel[(ugyfel["Név"] == nev)]
+
+        if not adat.empty:
+            email = adat["Email"].dropna().iloc[0] if adat["Email"].notna().any() else ""
+            tel = adat["Tel"].dropna().iloc[0] if adat["Tel"].notna().any() else ""
+            city = adat["Város"].dropna().iloc[0] if adat["Város"].notna().any() else ""
+            addr1 = adat["Lakcím"].dropna().iloc[0] if adat["Lakcím"].notna().any() else ""
+            addr2 = adat["Emelet, ajtó"].dropna().iloc[0] if adat["Emelet, ajtó"].notna().any() else ""
+
+            cim = f"{city}, {addr1} {addr2}".strip(", ").strip()  # csak akkor rakjon vesszőt, ha van város
+
+            center_align = stilus.Alignment(horizontal="left", vertical="center", wrap_text=True)
 
             self.ws["G9"] = self.vezetek_nev + " " + self.kereszt_nev
             self.ws["G9"].alignment = center_align
@@ -153,7 +186,7 @@ class Arajanlat:
 
     def elkeszites(self):
         #self.kep_illeszto("fejlec.png","A1", [200, 100])
-        self.szemelyes_adatok()
+        self.szemelyes_adatok_onedrive()
         self.anyagok_beirasa()
         self.utdij_beirasa()
 
