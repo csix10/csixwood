@@ -86,3 +86,24 @@ def borovi(termek_neve):
     else:
         print("⚠️ Nem talált táblázatot a megadott cím utáni szakaszban.")
         return {}
+
+from pathlib import Path
+
+def csv_utbol_arajanlat_ut(csv_path: str) -> str:
+    """
+    Bemenet:  .../ugyfelek/<ugyfel>/<projekt>/<valami>.csv
+    Kimenet:  .../ugyfelek/<ugyfel>/<projekt>/arajanlat_<projekt>.xlsx
+    """
+    p = Path(csv_path)
+
+    projektnev = p.parent.name          # <projekt>
+    projekt_mappa = p.parent            # .../<ugyfel>/<projekt>
+
+    out_path = projekt_mappa / f"arajanlat_{projektnev}.xlsx"
+    return str(out_path)
+
+
+# példa
+csv = r"C:\Users\csiki\OneDrive\munka\ugyfelek\ambrus_gergo\lebegeo_polc_2\lebegopolc.csv"
+print(csv_utbol_arajanlat_ut(csv))
+# -> C:\Users\csiki\OneDrive\munka\ugyfelek\ambrus_gergo\lebegeo_polc_2\arajanlat_lebegeo_polc_2.xlsx

@@ -7,13 +7,15 @@ import os
 import pandas as pd
 
 class Arajanlat:
-    def __init__(self, df, vezetek_nev = "", kereszt_nev = ""):
-        self.df = df
+    def __init__(self, vezetek_nev = "", kereszt_nev = ""):
+        self.faj = faj.BeolvasKiirat()
+        self.df = self.faj.csv_beolvas_df()
         self.vezetek_nev = vezetek_nev
         self.kereszt_nev = kereszt_nev
-        self.wb, self.ws = faj.BeolvasKiirat().szerkesztett_excel_beolvaso("minta_arajanlat.xlsx")
+        self.wb, self.ws = self.faj.szerkesztett_excel_beolvaso("minta_arajanlat.xlsx")
         self.sor = 17
         self.kezdosor = self.sor
+
 
     def tablazat_tolto(self, anyagjegyzek):
         anyagjegyzek = anyagjegyzek.astype({
@@ -110,7 +112,7 @@ class Arajanlat:
             return
 
         link = "https://1drv.ms/x/c/595ECD328626FCDE/IQCAAzRsxtjJRJhSfNq79RZ8AWpcUCbT_AV30IeTavTymUc?e=lrUfMC"
-        ugyfel = faj.BeolvasKiirat().excel_beolvas_onedrive_linkbol(megosztasi_link=link, cel_mappa="data", fajlnev="ugyfelek_adat.xlsx")
+        ugyfel = (self.faj.excel_beolvas_onedrive_linkbol(megosztasi_link=link, cel_mappa="data", fajlnev="ugyfelek_adat.xlsx"))
         nev = self.vezetek_nev + " " + self.kereszt_nev
         adat = ugyfel[(ugyfel["Név"] == nev)]
 
@@ -190,4 +192,4 @@ class Arajanlat:
         self.anyagok_beirasa()
         self.utdij_beirasa()
 
-        faj.BeolvasKiirat().exel_kiiratasa(self.wb, r"C:\Users\csiki\OneDrive\csixwood program\proba")
+        self.faj.exel_kiiratasa(self.wb, self.faj.csv_utbol_arajanlat_ut())

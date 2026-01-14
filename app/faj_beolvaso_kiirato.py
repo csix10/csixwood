@@ -5,11 +5,10 @@ import os
 from openpyxl import load_workbook
 from pathlib import Path
 import requests
-from io import BytesIO
 
 class BeolvasKiirat:
     def __init__(self):
-        pass
+        self.mappa = ""
 
     def csv_beolvasasa_databol(self, nev):
         input_file = "data/" + nev
@@ -27,6 +26,7 @@ class BeolvasKiirat:
             print("Nem választottál fájlt.")
             return None
 
+        self.mappa = file_path
         df = pd.read_csv(file_path, sep=";")
         print(f"Beolvasva: {file_path} ({len(df)} sor)")
         return df
@@ -64,15 +64,25 @@ class BeolvasKiirat:
 
         print(f"✅ Fájl sikeresen mentve ide: {fajl_ut}")
 
-    def exel_kiiratasa(self, wb, mappa, nev="arajanlat.xlsx"):
+    def exel_kiiratasa(self, wb, utvonal, teljes_fajlut=True, nev="arajanlat.xlsx"):
         """
-        Excel fájl mentése a megadott mappába.
-        - wb: Workbook objektum
-        - mappa: célmappa
-        - nev: fájlnév (alapértelmezett: "arajanlat.xlsx")
+        Excel fájl mentése.
+        - wb: openpyxl Workbook
+        - utvonal:
+            - ha teljes_fajlut=True → teljes fájlút
+            - ha teljes_fajlut=False → célmappa
+        - nev: fájlnév (csak akkor számít, ha nem teljes a fájlút)
         """
+
+        if teljes_fajlut:
+            fajl_ut = utvonal
+            mappa = os.path.dirname(fajl_ut)
+        else:
+            mappa = utvonal
+            fajl_ut = os.path.join(mappa, nev)
+
         os.makedirs(mappa, exist_ok=True)
-        fajl_ut = os.path.join(mappa, nev)
+
         wb.save(fajl_ut)
         print(f"✅ Fájl sikeresen mentve ide: {fajl_ut}")
 
@@ -133,4 +143,80 @@ class BeolvasKiirat:
         )
 
         return df
+
+
+
+    def utvonalellenorzo(self) -> bool:
+        """
+        Ellenőrzi a sémát: .../ugyfelek/<ugyfel>/<projekt>/<file>.csv
+        Csak a mappastruktúrát nézi, nem a teljes abszolút útvonalat.
+        """
+        p = Path(self.mappa)
+
+        if p.suffix.lower() != ".csv":
+            return False
+
+        parts = [x.lower() for x in p.parts]
+        # kell legalább: .../ugyfelek/<ugyfel>/<projekt>/<file>.csv
+        if len(parts) < 4:
+            return False
+
+        # legyen benne az "ugyfelek" mappa, és utána legyen még 3 elem
+        try:
+            idx = parts.index("ugyfelek")
+        except ValueError:
+            return False
+
+        return (len(parts) - idx) >= 4  # ugyfelek, ugyfel, projekt, file.csv
+
+    def faj_tallozo(self, fajnev: str) -> str | None:
+        """
+        Mentés helyének kiválasztása (Save As).
+        Visszaadja a kiválasztott útvonalat, vagy None-t ha a user Cancel.
+        """
+        root = tk.Tk()
+        root.withdraw()  # ne jelenjen meg üres ablak
+        root.attributes("-topmost", True)
+
+        path = filedialog.asksaveasfilename(
+            title="Hova mentsem az árajánlatot?",
+            defaultextension=".xlsx",
+            filetypes=[("Excel fájl", "*.xlsx")],
+            initialfile=default_filename,
+        )
+
+        root.destroy()
+        return path if path else None
+
+    def csv_utbol_arajanlat_ut(self) -> str | None:
+        """
+        Ha a bemeneti útvonal követi a sémát:
+          .../ugyfelek/<ugyfel>/<projekt>/<valami>.csv
+        akkor:
+          .../ugyfelek/<ugyfel>/<projekt>/arajanlat_<projekt>.xlsx
+
+        Ha nem követi:
+          felugró tallózó ablakban kiválasztható mentési hely.
+        """
+        p = Path(self.mappa)
+
+        if self.utvonalellenorzo():
+            projektnev = p.parent.name
+            out_path = p.parent / f"arajanlat_{projektnev}.xlsx"
+            return str(out_path)
+
+        chosen = self.faj_tallozo(fajnev = "arajanlat.xlsx")
+        return chosen
+
+    def csv_utbol_arajanlat_ut(self) -> str:
+        """
+        Bemenet:  .../ugyfelek/<ugyfel>/<projekt>/<valami>.csv
+        Kimenet:  .../ugyfelek/<ugyfel>/<projekt>/arajanlat_<projekt>.xlsx
+        """
+        p = Path(self.mappa)
+        projektnev = p.parent.name  # <projekt>
+        projekt_mappa = p.parent  # .../<ugyfel>/<projekt>
+
+        out_path = projekt_mappa / f"arajanlat_{projektnev}.xlsx"
+        return str(out_path)
 

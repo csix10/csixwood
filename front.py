@@ -48,8 +48,7 @@ class Front:
         return nev
 
     def ajanlat_keszites(self, vezetek_nev, kereszt_nev):
-        df = faj.BeolvasKiirat().csv_beolvas_df()
-        araj.Arajanlat(df, vezetek_nev.text(), kereszt_nev.text()).elkeszites()
+        araj.Arajanlat(vezetek_nev.text(), kereszt_nev.text()).elkeszites()
 
     def futtas(self):
         self.szoveg_kiiratas("Válaszd ki a szabásjegyzéket")
