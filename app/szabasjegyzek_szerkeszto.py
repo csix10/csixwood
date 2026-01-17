@@ -6,6 +6,7 @@ class SzabasjegyzekSzerkeszto:
     def __init__(self, df):
         self.df = df
         self.kereso = arukereso.Arukereso()
+        self.boltok =[]
 
     def oszlop_atnevezes_torles(self):
         self.df.rename(columns={"Designation": "Nev"}, inplace=True)
@@ -76,6 +77,9 @@ class SzabasjegyzekSzerkeszto:
 
     def bongeszo(self, nev, hely):
         if hely == "Butorkellek":
+            if "Butorkellek" not in self.boltok:
+                self.boltok.append("Butorkellek")
+
             adatok = self.kereso.butorkellek(nev)
             if not adatok:
                 return { "nev": "",
@@ -84,6 +88,9 @@ class SzabasjegyzekSzerkeszto:
             else:
                 return adatok
         elif hely == "Karnis":
+            if "Karnis" not in self.boltok:
+                self.boltok.append("Karnis")
+
             adatok = self.kereso.karnis(nev)
             if not adatok:
                 return { "nev": "",

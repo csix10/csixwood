@@ -10,6 +10,7 @@ class Arajanlat:
     def __init__(self, vezetek_nev = "", kereszt_nev = ""):
         self.faj = faj.BeolvasKiirat()
         self.df = self.faj.csv_beolvas_df()
+        self.szabjegyszerk = szabjegy.SzabasjegyzekSzerkeszto(self.df)
         self.vezetek_nev = vezetek_nev
         self.kereszt_nev = kereszt_nev
         self.wb, self.ws = self.faj.szerkesztett_excel_beolvaso("minta_arajanlat.xlsx")
@@ -140,7 +141,8 @@ class Arajanlat:
             self.ws["G12"].alignment = center_align
 
     def anyagok_beirasa(self):
-        anyagjegyzek, nyomtathato_szabjegy = szabjegy.SzabasjegyzekSzerkeszto(self.df).anyagigeny_szamitasa()
+        anyagjegyzek, nyomtathato_szabjegy = self.szabjegyszerk.anyagigeny_szamitasa()
+        print(self.szabjegyszerk.boltok)
 
         self.tablazat_tolto(anyagjegyzek)
 
