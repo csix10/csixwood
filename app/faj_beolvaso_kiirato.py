@@ -144,8 +144,6 @@ class BeolvasKiirat:
 
         return df
 
-
-
     def utvonalellenorzo(self) -> bool:
         """
         Ellenőrzi a sémát: .../ugyfelek/<ugyfel>/<projekt>/<file>.csv

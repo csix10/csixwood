@@ -7,16 +7,16 @@ import os
 import pandas as pd
 
 class Arajanlat:
-    def __init__(self, vezetek_nev = "", kereszt_nev = ""):
+    def __init__(self, vezetek_nev = "", kereszt_nev = "", munkadij_lepesek = ""):
         self.faj = faj.BeolvasKiirat()
         self.df = self.faj.csv_beolvas_df()
         self.szabjegyszerk = szabjegy.SzabasjegyzekSzerkeszto(self.df)
         self.vezetek_nev = vezetek_nev
         self.kereszt_nev = kereszt_nev
+        self.munkadijlepesek = munkadij_lepesek
         self.wb, self.ws = self.faj.szerkesztett_excel_beolvaso("minta_arajanlat.xlsx")
         self.sor = 17
         self.kezdosor = self.sor
-
 
     def tablazat_tolto(self, anyagjegyzek):
         anyagjegyzek = anyagjegyzek.astype({
@@ -154,32 +154,43 @@ class Arajanlat:
         for r in nyomtathato_szabjegy.itertuples(index=False):
             ws_2.append(r)
 
-    def utdij_beirasa(self):
+    def utdij_beirasa(self, toblettszorzo = 1.2):
             # ha F7 üres vagy None, akkor kilépünk
+        boltoktav = {
+            "Butorkellek": 0,
+            "Karnis": 7.3,
+            "Borovi": 10.3,
+        }
+
         if not self.ws["G12"].value:
             print("Nincs cím megadva, ezért nem történt utdíj kalkulálás.")
             return
+
+        plusztav = 0
+        for bolt in self.szabjegyszerk.boltok:
+            plusztav += boltoktav[bolt]
+
         utdij = adatgyujto.Utdij_kalkulator(self.ws["G12"].value)
-        fogyasztas = utdij.utdij_kalkulacio()
+        fogyasztas = utdij.utdij_kalkulacio(plusztav)
 
         sorok = [
             {
                 "Anyag": "Benzin",
                 "Szin": "",
                 "URL": utdij.nav_url,
-                "Mennyiseg": fogyasztas.get("literek", 0) * 2,
+                "Mennyiseg": fogyasztas.get("literek", 0) * 2 * toblettszorzo,
                 "Mertekegyseg": "l",
                 "Egysegar": fogyasztas.get("literar_huf", 0),
-                "Osszar": fogyasztas.get("uzemanyag_koltseg_huf", 0) * 2,
+                "Osszar": fogyasztas.get("uzemanyag_koltseg_huf", 0) * 2 * toblettszorzo,
             },
             {
                 "Anyag": "Autóamortizáció",
                 "Szin": "",
                 "URL": "",
-                "Mennyiseg": fogyasztas.get("tavolsag_km", 0) * 2,
+                "Mennyiseg": fogyasztas.get("tavolsag_km", 0) * 2 * toblettszorzo,
                 "Mertekegyseg": "km",
                 "Egysegar": fogyasztas.get("amortizacio_per_km", 0),
-                "Osszar": fogyasztas.get("auto_amortizacio_huf", 0) * 2,
+                "Osszar": fogyasztas.get("auto_amortizacio_huf", 0) * 2 * toblettszorzo,
             }
         ]
 

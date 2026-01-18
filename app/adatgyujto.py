@@ -196,14 +196,14 @@ class Utdij_kalkulator:
         cost = liters * price_per_liter
         return {"koltseg": cost, "liter": liters, "literar_huf": price_per_liter}
 
-    def utdij_kalkulacio(self) -> Dict[str, float]:
+    def utdij_kalkulacio(self, plusztav) -> Dict[str, float]:
         rt = self.route_distance_time(self.hely_1, self.hely_2)
-        fogyasztas = self.fuel_cost(rt["distance_km"])
-        amortizacio = rt["distance_km"] * self.autoamortizacio_per_km
+        fogyasztas = self.fuel_cost(rt["distance_km"] + plusztav)
+        amortizacio = (rt["distance_km"] + plusztav) * self.autoamortizacio_per_km
         return {
             "indulas": self.hely_1,
             "erkezes": self.hely_2,
-            "tavolsag_km": round(rt["distance_km"], 1),
+            "tavolsag_km": round(rt["distance_km"] + plusztav, 1),
             "menetido_perc": round(rt["duration_min"]),
             "fogyasztas_l100": self.l_per_100km,
             "literar_huf": fogyasztas["literar_huf"],
