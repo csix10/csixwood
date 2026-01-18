@@ -141,7 +141,7 @@ class Arajanlat:
             self.ws["G12"].alignment = center_align
 
     def anyagok_beirasa(self):
-        anyagjegyzek, nyomtathato_szabjegy = self.szabjegyszerk.anyagigeny_szamitasa()
+        anyagjegyzek, nyomtathato_szabjegy = self.szabjegyszerk.anyagjegyzek_szamitasa()
         print(self.szabjegyszerk.boltok)
 
         self.tablazat_tolto(anyagjegyzek)
@@ -199,10 +199,56 @@ class Arajanlat:
 
         self.tablazat_tolto(anyagjegyzek_df)
 
+    def munkadij_beiras(self):
+        sorok = []
+
+        mertek_dict = getattr(self.szabjegyszerk, "mertekegyseg_dict", {})
+
+        for sor in (self.munkadijlepesek or []):
+            nev = sor.get("nev", "")
+            leiras = sor.get("leiras", "")
+            szamtip = sor.get("szamtip", "")
+            ar = sor.get("ar", 0)
+
+            # egység biztonságosan
+            mertekegyseg = mertek_dict.get(szamtip, "")
+
+            # ár legyen szám (ha string jönne)
+            try:
+                ar = int(float(ar))
+            except Exception:
+                ar = 0
+
+            sorok.append({
+                "Anyag": str(nev),
+                "Szin": str(leiras),
+                "URL": "",
+                "Mennyiseg": 0,
+                "Mertekegyseg": mertekegyseg,
+                "Egysegar": ar,
+                "Osszar": 0
+            })
+
+        if not sorok:
+            print("ℹ️ Nincs munkadíj lépés kiválasztva.")
+            return
+
+        # ha kell helyet hagyni a táblázat felett
+        self.sor += 4
+        self.kezdosor = self.sor
+
+        munkajegyzek_df = pd.DataFrame(
+            sorok,
+            columns=["Anyag", "Szin", "URL", "Mennyiseg", "Mertekegyseg", "Egysegar", "Osszar"]
+        )
+
+        self.tablazat_tolto(munkajegyzek_df)
+
     def elkeszites(self):
         #self.kep_illeszto("fejlec.png","A1", [200, 100])
         self.szemelyes_adatok_onedrive()
         self.anyagok_beirasa()
         self.utdij_beirasa()
+        self.munkadij_beiras()
 
         self.faj.exel_kiiratasa(self.wb, self.faj.csv_utbol_arajanlat_ut())

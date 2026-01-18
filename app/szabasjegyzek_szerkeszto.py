@@ -7,6 +7,18 @@ class SzabasjegyzekSzerkeszto:
         self.df = df
         self.kereso = arukereso.Arukereso()
         self.boltok =[]
+        self.anyagigeny = pd.DataFrame()
+        self.nyomtathato_szabjegy = pd.DataFrame()
+        self.mertekegyseg_dict = {
+                "Osz_Hosz": "m",
+                "Terulet": "m²",
+                "Teljes_Felulet": "m²",
+                "Terfogat": "m³",
+                "DB": "db",
+                "Vekonyelzaro": "m",
+                "Vastagelzaro": "m",
+                "Ora": "óra"
+            }
 
     def oszlop_atnevezes_torles(self):
         self.df.rename(columns={"Designation": "Nev"}, inplace=True)
@@ -48,6 +60,7 @@ class SzabasjegyzekSzerkeszto:
     def hosz_terulet_terfogat_szamitas(self):
         self.df["Osz_Hosz"] = self.df["DB"] * self.df["Hosz"] / 1000
         self.df["Terulet"] = self.df["DB"] * self.df["Hosz"] * self.df["Szel"] / 1000000
+        self.df["Teljes_Felulet"] = 2 * self.df["DB"] * (self.df["Hosz"] * self.df["Szel"] + self.df["Hosz"] * self.df["Vas"] + self.df["Szel"] * self.df["Vas"]) / 1000000
         self.df["Terfogat"] = self.df["DB"] * self.df["Hosz"] * self.df["Szel"] * self.df["Vas"] / 1000000000
 
     def elzaras_szamitas(self):
@@ -105,20 +118,24 @@ class SzabasjegyzekSzerkeszto:
 
 
     def anyagigeny_szamitasa(self):
-        # Beolvasás
+        # Osszegzés anyag és szín szerint
+        self.df, self.nyomtathato_szabjegy = self.szabasjegyzek_szerkeszto()
+        osszegzes = self.df.groupby(["Anyag", "Szin"], as_index=False, dropna=False)[
+            ["DB", "Osz_Hosz", "Terulet", "Teljes_Felulet", "Terfogat", "Vekonyelzaro", "Vastagelzaro"]
+        ].sum()
+
+        self.anyagigeny = osszegzes
+
+    def anyagjegyzek_szamitasa(self):
         anyagtip = faj.BeolvasKiirat().csv_beolvasasa_databol("anyagtipusok.csv")
 
-        self.df, nyomtathato_szabjegy = self.szabasjegyzek_szerkeszto()
-
-        # Osszegzés anyag és szín szerint
-        osszegzes = self.df.groupby(["Anyag", "Szin"], as_index=False, dropna=False)[
-            ["DB", "Osz_Hosz", "Terulet", "Terfogat", "Vekonyelzaro", "Vastagelzaro"]
-        ].sum()
+        if self.anyagigeny.empty:
+            self.anyagigeny_szamitasa()
 
         # Csak az adott anyaghoz tartozó elszámolási alapot hagyjuk meg
         eredmeny_list = []
 
-        for _, row in osszegzes.iterrows():
+        for _, row in self.anyagigeny.iterrows():
             anyag = row["Anyag"]
             szin = row["Szin"]
             alap = anyagtip.loc[anyagtip["Anyag"] == anyag, "Szamitasialap"].squeeze()
@@ -136,16 +153,7 @@ class SzabasjegyzekSzerkeszto:
             # Kiválasztjuk az adott alaphoz tartozó oszlopot
             ertek = row.get(alap, 0)
 
-            mertekegyseg_dict = {
-                "Osz_Hosz": "m",
-                "Terulet": "m²",
-                "Terfogat": "m³",
-                "DB": "db",
-                "Vekonyelzaro": "m",
-                "Vastagelzaro": "m"
-            }
-
-            mertekegyseg = mertekegyseg_dict.get(alap, "")
+            mertekegyseg = self.mertekegyseg_dict.get(alap, "")
             # Hozzáadjuk az eredmény listához, opcionálisan mértékegységgel
             eredmeny_list.append({
                 "Anyag": szep_anyagnev,
@@ -188,6 +196,6 @@ class SzabasjegyzekSzerkeszto:
         # Új DataFrame az anyagonkénti elszámolásra
         df_eredmeny = pd.DataFrame(eredmeny_list)
 
-        return df_eredmeny, nyomtathato_szabjegy
+        return df_eredmeny, self.nyomtathato_szabjegy
 
 

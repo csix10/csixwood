@@ -207,6 +207,7 @@ class Front:
         self.layout = Qw.QVBoxLayout()
         self.window.setWindowTitle("CsixWood")
         self.window.resize(1000, 500)
+        self.munka_widget=""
 
     def stilus_beallitas(self):
         self.window.setStyleSheet("""
@@ -253,22 +254,32 @@ class Front:
         vezetek_nev = self.input_mezo("Írd be az ügyfél vezetéknevét:")
         kereszt_nev = self.input_mezo("Írd be az ügyfél keresztnevét:")
 
-        # ✅ munkadíj adatbázis beolvasása (állítsd be a saját utadra!)
         link = "https://1drv.ms/x/c/595ECD328626FCDE/IQBQc2FuUwOMRp7xoE1-idfeAb-lcS22MI8C1r-XFIJB5cE?e=JHUQ2u"
-        munkadij_df = faj.BeolvasKiirat().excel_beolvas_onedrive_linkbol(megosztasi_link=link, cel_mappa="data", fajlnev="munkadij.xlsx")
+        munkadij_df = faj.BeolvasKiirat().excel_beolvas_onedrive_linkbol(
+            megosztasi_link=link,
+            cel_mappa="data",
+            fajlnev="munkadij.xlsx"
+        )
 
-        # ✅ választó widget
+        # ✅ legyen self, hogy később is elérd
         self.munka_widget = MunkafolyamatValasztoExcel(munkadij_df)
         self.layout.addWidget(self.munka_widget)
 
-        lepesek = self.munka_widget.get_selected_steps()
-
-        self.gomb("Árajánlat készítése", lambda: self.ajanlat_keszites(vezetek_nev, kereszt_nev, lepesek))
+        # ✅ gombnyomáskor kérdezzük le
+        self.gomb(
+            "Árajánlat készítése",
+            lambda: self.ajanlat_keszites(
+                vezetek_nev,
+                kereszt_nev,
+                self.munka_widget.get_selected_steps()
+            )
+        )
 
         self.window.setLayout(self.layout)
         self.stilus_beallitas()
         self.window.show()
         self.app.exec()
+
 
 if __name__ == "__main__":
     Front().futtas()
