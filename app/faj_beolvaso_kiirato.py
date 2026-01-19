@@ -167,7 +167,7 @@ class BeolvasKiirat:
 
         return (len(parts) - idx) >= 4  # ugyfelek, ugyfel, projekt, file.csv
 
-    def faj_tallozo(self, fajnev: str) -> str | None:
+    def faj_tallozo(self, fajnev: str, default_filename=None) -> str | None:
         """
         Mentés helyének kiválasztása (Save As).
         Visszaadja a kiválasztott útvonalat, vagy None-t ha a user Cancel.

@@ -9,14 +9,18 @@ import pandas as pd
 class Arajanlat:
     def __init__(self, vezetek_nev = "", kereszt_nev = "", munkadij_lepesek = ""):
         self.faj = faj.BeolvasKiirat()
-        self.df = self.faj.csv_beolvas_df()
-        self.szabjegyszerk = szabjegy.SzabasjegyzekSzerkeszto(self.df)
+        self.df = None
+        self.szabjegyszerk = None
         self.vezetek_nev = vezetek_nev
         self.kereszt_nev = kereszt_nev
         self.munkadijlepesek = munkadij_lepesek
         self.wb, self.ws = self.faj.szerkesztett_excel_beolvaso("minta_arajanlat.xlsx")
         self.sor = 17
         self.kezdosor = self.sor
+
+    def adatbeolvaso(self):
+        self.df = self.faj.csv_beolvas_df()
+        self.szabjegyszerk = szabjegy.SzabasjegyzekSzerkeszto(self.df)
 
     def tablazat_tolto(self, anyagjegyzek):
         anyagjegyzek = anyagjegyzek.astype({
@@ -246,6 +250,8 @@ class Arajanlat:
 
     def elkeszites(self):
         #self.kep_illeszto("fejlec.png","A1", [200, 100])
+        if self.df is None:
+            self.adatbeolvaso()
         self.szemelyes_adatok_onedrive()
         self.anyagok_beirasa()
         self.utdij_beirasa()

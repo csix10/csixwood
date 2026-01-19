@@ -2,10 +2,225 @@ import os
 import pandas as pd
 import PySide6.QtWidgets as Qw
 from PySide6.QtCore import Qt
+from PySide6.QtCore import Signal
+import app.arajanlat_keszito as arajanlat
+import app.faj_beolvaso_kiirato as faj
 
 # ide importáld a saját moduljaidat:
 # import app.arajanlat_keszito as araj
 # import app.faj_beolvaso_kiirato as faj
+
+class MunkafolyamatValasztoExcel(Qw.QGroupBox):
+    step_added = Signal(dict)   # elküldi a teljes sort: nev/leiras/szamtip/ar
+    """
+    Excelből beolvasott munkadíj adatbázisból válogató:
+    - kereső mező
+    - találatok táblázatban (nev/leiras/szamtip/ar)
+    - kiválasztottak táblázatban (ugyanaz)
+    """
+    def __init__(self):
+        super().__init__("Munkafolyamatok kiválasztása (munkadíj adatbázisból)")
+
+        link = "https://1drv.ms/x/c/595ECD328626FCDE/IQBQc2FuUwOMRp7xoE1-idfeAb-lcS22MI8C1r-XFIJB5cE?e=JHUQ2u"
+        munkadij_df = faj.BeolvasKiirat().excel_beolvas_onedrive_linkbol(
+            megosztasi_link=link,
+            cel_mappa="data",
+            fajlnev="munkadij.xlsx"
+        )
+
+        self.df = munkadij_df.reset_index(drop=True)
+
+        main = Qw.QVBoxLayout(self)
+
+        # Kereső
+        self.search = Qw.QLineEdit()
+        self.search.setPlaceholderText("Keresés (név/leírás), pl: gyalulás, lakk, beszerelés...")
+        main.addWidget(self.search)
+
+        # Két táblázat egymás mellett + gombok
+        row = Qw.QHBoxLayout()
+        main.addLayout(row)
+
+        # Találatok
+        left = Qw.QVBoxLayout()
+        left.addWidget(Qw.QLabel("Találatok:"))
+        self.tbl_results = Qw.QTableWidget()
+        self._setup_table(self.tbl_results)
+        left.addWidget(self.tbl_results)
+        row.addLayout(left, 4)
+
+        # Gombok
+        mid = Qw.QVBoxLayout()
+        self.btn_add = Qw.QPushButton("Hozzáadás →")
+        self.btn_remove = Qw.QPushButton("← Törlés")
+        self.btn_up = Qw.QPushButton("Fel ↑")
+        self.btn_down = Qw.QPushButton("Le ↓")
+        mid.addStretch(1)
+        mid.addWidget(self.btn_add)
+        mid.addWidget(self.btn_remove)
+        mid.addSpacing(12)
+        mid.addWidget(self.btn_up)
+        mid.addWidget(self.btn_down)
+        mid.addStretch(1)
+        row.addLayout(mid, 1)
+
+        # Kiválasztottak
+        right = Qw.QVBoxLayout()
+        right.addWidget(Qw.QLabel("Kiválasztott munkafolyamatok:"))
+        self.tbl_selected = Qw.QTableWidget()
+        self._setup_table(self.tbl_selected)
+        right.addWidget(self.tbl_selected)
+        row.addLayout(right, 4)
+
+        # Események
+        self.search.textChanged.connect(self.refresh_results)
+        self.btn_add.clicked.connect(self.add_current)
+        self.btn_remove.clicked.connect(self.remove_current)
+        self.btn_up.clicked.connect(lambda: self.move_selected(-1))
+        self.btn_down.clicked.connect(lambda: self.move_selected(+1))
+
+        self.tbl_results.cellDoubleClicked.connect(lambda *_: self.add_current())
+
+        # Első feltöltés
+        self.refresh_results()
+
+    def _setup_table(self, tbl: Qw.QTableWidget):
+        tbl.setColumnCount(4)
+        tbl.setHorizontalHeaderLabels(["Név", "Leírás", "Számítási típus", "Ár (Ft)"])
+        tbl.setEditTriggers(Qw.QAbstractItemView.NoEditTriggers)
+        tbl.setSelectionBehavior(Qw.QAbstractItemView.SelectRows)
+        tbl.setSelectionMode(Qw.QAbstractItemView.SingleSelection)
+        tbl.horizontalHeader().setStretchLastSection(True)
+        tbl.verticalHeader().setVisible(False)
+
+    def refresh_results(self):
+        text = self.search.text().strip().lower()
+
+        if not text:
+            filtered = self.df
+        else:
+            mask = (
+                self.df["nev"].str.lower().str.contains(text, na=False) |
+                self.df["leiras"].str.lower().str.contains(text, na=False)
+            )
+            filtered = self.df[mask]
+
+        self._fill_table(self.tbl_results, filtered)
+
+    def _safe_str(self, x) -> str:
+        if x is None:
+            return ""
+        # pandas NaN felismerés
+        try:
+            import pandas as pd
+            if pd.isna(x):
+                return ""
+        except Exception:
+            pass
+        return str(x)
+
+    def _fill_table(self, tbl: Qw.QTableWidget, df):
+        tbl.setRowCount(len(df))
+
+        for r, (_, row) in enumerate(df.iterrows()):
+            tbl.setItem(r, 0, Qw.QTableWidgetItem(self._safe_str(row.get("nev", ""))))
+            tbl.setItem(r, 1, Qw.QTableWidgetItem(self._safe_str(row.get("leiras", ""))))
+            tbl.setItem(r, 2, Qw.QTableWidgetItem(self._safe_str(row.get("szamtip", ""))))
+
+            # ár: legyen int, de biztonságosan
+            try:
+                ar_val = int(float(row.get("ar", 0) or 0))
+            except Exception:
+                ar_val = 0
+
+            ar_item = Qw.QTableWidgetItem(str(ar_val))
+            ar_item.setTextAlignment(Qt.AlignRight | Qt.AlignVCenter)
+            tbl.setItem(r, 3, ar_item)
+
+        tbl.resizeColumnsToContents()
+
+    def _row_to_key(self, nev, leiras, szamtip):
+        # egyedi azonosító: név + leírás + számítási típus
+        return (nev.strip(), leiras.strip(), szamtip.strip())
+
+    def add_current(self):
+        r = self.tbl_results.currentRow()
+        if r < 0:
+            return
+
+        nev = self.tbl_results.item(r, 0).text()
+        leiras = self.tbl_results.item(r, 1).text()
+        szamtip = self.tbl_results.item(r, 2).text()
+        ar = self.tbl_results.item(r, 3).text()
+
+        key = self._row_to_key(nev, leiras, szamtip)
+
+        # duplikáció tiltás
+        existing_keys = set()
+        for i in range(self.tbl_selected.rowCount()):
+            k = self._row_to_key(
+                self.tbl_selected.item(i, 0).text(),
+                self.tbl_selected.item(i, 1).text(),
+                self.tbl_selected.item(i, 2).text(),
+            )
+            existing_keys.add(k)
+
+        if key in existing_keys:
+            return
+
+        # hozzáadás a selected táblához
+        new_row = self.tbl_selected.rowCount()
+        self.tbl_selected.insertRow(new_row)
+        self.tbl_selected.setItem(new_row, 0, Qw.QTableWidgetItem(nev))
+        self.tbl_selected.setItem(new_row, 1, Qw.QTableWidgetItem(leiras))
+        self.tbl_selected.setItem(new_row, 2, Qw.QTableWidgetItem(szamtip))
+        ar_item = Qw.QTableWidgetItem(ar)
+        ar_item.setTextAlignment(Qt.AlignRight | Qt.AlignVCenter)
+        self.tbl_selected.setItem(new_row, 3, ar_item)
+
+        self.tbl_selected.resizeColumnsToContents()
+
+        # jelzés Step2-nek
+        self.step_added.emit({
+            "nev": nev,
+            "leiras": leiras,
+            "szamtip": szamtip,
+            "ar": int(ar) if str(ar).strip().isdigit() else ar
+        })
+
+    def remove_current(self):
+        r = self.tbl_selected.currentRow()
+        if r >= 0:
+            self.tbl_selected.removeRow(r)
+
+    def move_selected(self, direction: int):
+        r = self.tbl_selected.currentRow()
+        if r < 0:
+            return
+        nr = r + direction
+        if nr < 0 or nr >= self.tbl_selected.rowCount():
+            return
+
+        # sor csere (itemek swap)
+        for c in range(self.tbl_selected.columnCount()):
+            a = self.tbl_selected.takeItem(r, c)
+            b = self.tbl_selected.takeItem(nr, c)
+            self.tbl_selected.setItem(r, c, b)
+            self.tbl_selected.setItem(nr, c, a)
+
+        self.tbl_selected.setCurrentCell(nr, 0)
+
+    def get_selected_steps(self) -> list[dict]:
+        """Kiválasztott lépések listája dict-ekben."""
+        out = []
+        for i in range(self.tbl_selected.rowCount()):
+            out.append({
+                "nev": self.tbl_selected.item(i, 0).text(),
+                "leiras": self.tbl_selected.item(i, 1).text(),
+                "szamtip": self.tbl_selected.item(i, 2).text(),
+                "ar": int(self.tbl_selected.item(i, 3).text()) if self.tbl_selected.item(i, 3) else 0,
+            })
+        return out
 
 
 class WizardWindow(Qw.QWidget):
@@ -34,6 +249,8 @@ class WizardWindow(Qw.QWidget):
         self.stack.addWidget(self.step3)
 
         self.layout.addWidget(self.stack)
+        self.faj = faj.BeolvasKiirat()
+        self.arajanlatszerk  = arajanlat.Arajanlat()
 
     def goto(self, idx: int):
         self.stack.setCurrentIndex(idx)
@@ -48,10 +265,10 @@ class Step1CsvImport(Qw.QGroupBox):
         lay.addWidget(self.lbl)
 
         row = Qw.QHBoxLayout()
-        self.path_edit = Qw.QLineEdit()
-        self.path_edit.setPlaceholderText("CSV útvonal…")
+        #self.path_edit = Qw.QLineEdit()
+        #self.path_edit.setPlaceholderText("CSV útvonal…")
         self.btn_browse = Qw.QPushButton("Tallózás…")
-        row.addWidget(self.path_edit, 1)
+        #row.addWidget(self.path_edit, 1)
         row.addWidget(self.btn_browse)
         lay.addLayout(row)
 
@@ -69,16 +286,21 @@ class Step1CsvImport(Qw.QGroupBox):
         self.btn_browse.clicked.connect(self.browse_csv)
         self.btn_run.clicked.connect(self.run_calc)
         self.btn_next.clicked.connect(lambda: self.wiz.goto(1))
+        self.df = None
 
     def browse_csv(self):
+        """
         path, _ = Qw.QFileDialog.getOpenFileName(
             self, "Szabásjegyzék CSV kiválasztása", "",
             "CSV fájl (*.csv);;Minden fájl (*.*)"
         )
         if path:
             self.path_edit.setText(path)
+        """
+        self.df = self.wiz.arajanlatszerk.adatbeolvaso()
 
     def run_calc(self):
+        """
         csv_path = self.path_edit.text().strip()
         if not csv_path or not os.path.exists(csv_path):
             Qw.QMessageBox.warning(self, "Hiba", "Érvénytelen CSV útvonal.")
@@ -86,27 +308,18 @@ class Step1CsvImport(Qw.QGroupBox):
 
         self.wiz.csv_path = csv_path
 
-        # -------------------------------
-        # IDE KÖTÖD BE A SAJÁT LOGIKÁD:
-        # 1) CSV beolvasás -> df
-        # 2) szabásjegyzék szerkesztés
-        # 3) anyagigény számítás -> anyagigeny_df
-        #
-        # Példa:
-        # df = pd.read_csv(csv_path, encoding="utf-8", sep=";")  # vagy amilyen
-        # szerk = SzabasjegyzekSzerkeszto(df)
-        # anyagigeny_df, nyomtathato = szerk.anyagigeny_szamitasa()
-        #
-        # Most csak dummy:
-        # -------------------------------
+
         try:
             df = pd.read_csv(csv_path, encoding="utf-8", sep=None, engine="python")
         except Exception as e:
             Qw.QMessageBox.critical(self, "CSV hiba", str(e))
             return
+        print(df)
+        """
 
-        # TODO: itt valós anyagigény számításod legyen:
-        anyagigeny_df = df.head(10).copy()  # placeholder
+        self.wiz.arajanlatszerk.szabjegyszerk.anyagigeny_szamitasa()
+
+        anyagigeny_df =  self.wiz.arajanlatszerk.szabjegyszerk.anyagigeny
 
         self.wiz.anyagigeny_df = anyagigeny_df
         self.wiz.nyomtathato_df = None
@@ -125,20 +338,25 @@ class Step1CsvImport(Qw.QGroupBox):
         self.preview.resizeColumnsToContents()
 
 class Step2MunkaAnyag(Qw.QGroupBox):
-    def __init__(self, wiz: WizardWindow):
+    def __init__(self, wiz):
         super().__init__("2. lépés – Munkamenet összeállítás és anyagok hozzárendelése")
         self.wiz = wiz
         lay = Qw.QVBoxLayout(self)
 
-        self.info = Qw.QLabel("Válassz munkafolyamatokat, és rögtön jelöld ki az érintett anyagokat az anyagigényből.")
+        self.info = Qw.QLabel(
+            "Válassz munkafolyamatokat, és rögtön jelöld ki az érintett anyagokat az anyagigényből."
+        )
         lay.addWidget(self.info)
 
-        # Felső rész: munkafolyamat választó (a meglévő widgetedet ide tedd!)
-        self.munka_valaszto_placeholder = Qw.QLabel("IDE jön a MunkafolyamatValasztoExcel widget (adatbázisból)")
-        self.munka_valaszto_placeholder.setStyleSheet("padding:8px; border:1px dashed #888;")
-        lay.addWidget(self.munka_valaszto_placeholder)
+        # -------- FELSŐ RÉSZ: munkafolyamat választó (VALÓDI) ----------
+        # itt feltételezzük: wiz.munkadij_df már be van töltve (WizardWindow-ban)
+        self.munka_widget = MunkafolyamatValasztoExcel()
+        lay.addWidget(self.munka_widget)
 
-        # Alsó rész: hozzárendelés
+        # ha hozzáad egy munkafolyamatot, rögtön vegyük át Step2-be:
+        self.munka_widget.step_added.connect(self._on_step_added)
+
+        # -------- ALSÓ RÉSZ: hozzárendelés ----------
         row = Qw.QHBoxLayout()
         lay.addLayout(row, 1)
 
@@ -165,9 +383,15 @@ class Step2MunkaAnyag(Qw.QGroupBox):
         self.lst_steps.currentTextChanged.connect(self._load_anyag_checks)
 
     def showEvent(self, e):
-        """Amikor ez a lépés megjelenik, töltsük be az anyaglistát az anyagigényből."""
         super().showEvent(e)
         self._build_anyag_list()
+
+        # ha már van korábbi állapot (pl. visszalépett), töltsük vissza
+        self.lst_steps.clear()
+        for step in self.wiz.munkalepesek:
+            self.lst_steps.addItem(step["nev"])
+        if self.lst_steps.count() > 0:
+            self.lst_steps.setCurrentRow(0)
 
     def _box(self, title, widget):
         g = Qw.QGroupBox(title)
@@ -183,9 +407,15 @@ class Step2MunkaAnyag(Qw.QGroupBox):
             self.info.setText("⚠️ Nincs anyagigény. Menj vissza és számold ki előbb.")
             return
 
-        # itt állítsd be, hogy melyik oszlopból jön az anyagnév
+        # anyag oszlop
         anyag_col = "Anyag" if "Anyag" in df.columns else df.columns[0]
         anyagok = sorted(set(df[anyag_col].dropna().astype(str).tolist()))
+
+        # jelzések duplázódásának elkerülése
+        try:
+            self.lst_anyag.itemChanged.disconnect()
+        except Exception:
+            pass
 
         for a in anyagok:
             item = Qw.QListWidgetItem(a)
@@ -195,14 +425,26 @@ class Step2MunkaAnyag(Qw.QGroupBox):
 
         self.lst_anyag.itemChanged.connect(self._on_anyag_changed)
 
-    def add_munkalepes(self, nev: str):
-        """Ezt hívd meg, amikor a munkafolyamat-választóból hozzáadsz egy lépést."""
+    def _on_step_added(self, step: dict):
+        """Ezt hívja a signal: amikor felül hozzáadsz egy munkafolyamatot."""
+        nev = step.get("nev", "").strip()
         if not nev:
             return
+
+        # munkalépések listája (wizard state)
+        existing = {s["nev"] for s in self.wiz.munkalepesek}
+        if nev not in existing:
+            self.wiz.munkalepesek.append(step)
+
+        # hozzárendelés dict inicializálása
         if nev not in self.wiz.hozzarendeles:
             self.wiz.hozzarendeles[nev] = []
+
+        # listába felvétel, ha még nincs benne
+        items = [self.lst_steps.item(i).text() for i in range(self.lst_steps.count())]
+        if nev not in items:
             self.lst_steps.addItem(nev)
-            self.lst_steps.setCurrentRow(self.lst_steps.count() - 1)  # ráállunk, hogy rögtön pipálhasson
+            self.lst_steps.setCurrentRow(self.lst_steps.count() - 1)  # ráállunk
 
     def _load_anyag_checks(self, munka_nev: str):
         if not munka_nev:
@@ -230,10 +472,11 @@ class Step2MunkaAnyag(Qw.QGroupBox):
         self.wiz.hozzarendeles[munka] = sorted(cur)
 
     def _next(self):
-        if not self.wiz.hozzarendeles:
+        if not self.wiz.munkalepesek:
             Qw.QMessageBox.warning(self, "Hiányzik", "Nem választottál munkafolyamatot.")
             return
         self.wiz.goto(2)
+
 
 class Step3Export(Qw.QGroupBox):
     def __init__(self, wiz: WizardWindow):
@@ -259,6 +502,7 @@ class Step3Export(Qw.QGroupBox):
         # self.wiz.hozzarendeles  (munkafolyamat -> anyagok)
         # + név mezők (ha kellenek, azt majd átadjuk)
         # ----
+        """
         save_path, _ = Qw.QFileDialog.getSaveFileName(
             self, "Árajánlat mentése", "", "Excel fájl (*.xlsx)"
         )
@@ -267,5 +511,13 @@ class Step3Export(Qw.QGroupBox):
 
         # TODO: itt hívd a saját Arajanlat generálást:
         # araj.Arajanlat(...).elkeszites(save_path=save_path, ...)
-        Qw.QMessageBox.information(self, "Kész", f"Elmentve ide:\n{save_path}")
+        """
+        self.wiz.arajanlatszerk.munkadijlepesek = self.wiz.munkalepesek
+        self.wiz.arajanlatszerk.elkeszites()
+        #Qw.QMessageBox.information(self, "Kész", f"Elmentve ide:\n{save_path}")
 
+if __name__ == "__main__":
+    app = Qw.QApplication([])
+    w = WizardWindow()
+    w.show()
+    app.exec()
