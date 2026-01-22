@@ -226,6 +226,10 @@ class MunkafolyamatValasztoExcel(Qw.QGroupBox):
 class WizardWindow(Qw.QWidget):
     def __init__(self):
         super().__init__()
+
+        self.faj = faj.BeolvasKiirat()
+        self.arajanlatszerk = arajanlat.Arajanlat()
+
         self.setWindowTitle("CsixWood – Árajánlat varázsló")
         self.resize(900, 600)
 
@@ -249,12 +253,10 @@ class WizardWindow(Qw.QWidget):
         self.stack.addWidget(self.step3)
 
         self.layout.addWidget(self.stack)
-        self.faj = faj.BeolvasKiirat()
-        self.arajanlatszerk  = arajanlat.Arajanlat()
 
     def goto(self, idx: int):
         self.stack.setCurrentIndex(idx)
-
+'''
 class Step1CsvImport(Qw.QGroupBox):
     def __init__(self, wiz: WizardWindow):
         super().__init__("1. lépés – CSV betallózás és anyagigény számítás")
@@ -265,15 +267,9 @@ class Step1CsvImport(Qw.QGroupBox):
         lay.addWidget(self.lbl)
 
         row = Qw.QHBoxLayout()
-        #self.path_edit = Qw.QLineEdit()
-        #self.path_edit.setPlaceholderText("CSV útvonal…")
-        self.btn_browse = Qw.QPushButton("Tallózás…")
-        #row.addWidget(self.path_edit, 1)
-        row.addWidget(self.btn_browse)
+        self.btn_run = Qw.QPushButton("Tallózás…")
+        row.addWidget(self.btn_run)
         lay.addLayout(row)
-
-        self.btn_run = Qw.QPushButton("Anyagigény kiszámítása")
-        lay.addWidget(self.btn_run)
 
         self.preview = Qw.QTableWidget()
         lay.addWidget(Qw.QLabel("Előnézet (anyagigény):"))
@@ -283,43 +279,171 @@ class Step1CsvImport(Qw.QGroupBox):
         self.btn_next.setEnabled(False)
         lay.addWidget(self.btn_next)
 
-        self.btn_browse.clicked.connect(self.browse_csv)
         self.btn_run.clicked.connect(self.run_calc)
         self.btn_next.clicked.connect(lambda: self.wiz.goto(1))
         self.df = None
 
-    def browse_csv(self):
+    def run_calc(self):
+        self.df = self.wiz.arajanlatszerk.adatbeolvaso()
+        self.wiz.arajanlatszerk.szabjegyszerk.anyagigeny_szamitasa()
+
+        anyagigeny_df = self.wiz.arajanlatszerk.szabjegyszerk.anyagigeny
+
+        self.wiz.anyagigeny_df = anyagigeny_df
+        self.wiz.nyomtathato_df = None
+
+        self._show_preview(anyagigeny_df)
+        self.btn_next.setEnabled(True)
+
+    def _show_preview(self, df: pd.DataFrame):
+        self.preview.setRowCount(min(len(df), 15))
+        self.preview.setColumnCount(len(df.columns))
+        self.preview.setHorizontalHeaderLabels([str(c) for c in df.columns])
+
+        for r in range(min(len(df), 15)):
+            for c, col in enumerate(df.columns):
+                self.preview.setItem(r, c, Qw.QTableWidgetItem(str(df.iloc[r, c])))
+        self.preview.resizeColumnsToContents()
+'''
+
+class Step1CsvImport(Qw.QGroupBox):
+    def __init__(self, wiz: "WizardWindow"):
+        super().__init__("1. lépés – CSV betallózás és anyagigény számítás")
+        self.wiz = wiz
+        lay = Qw.QVBoxLayout(self)
+
+        self.lbl = Qw.QLabel("1) Válaszd ki az ügyfelet  2) Tallózd be a CSV-t  3) Számoljuk az anyagigényt.")
+        lay.addWidget(self.lbl)
+
+        # ---- ÜGYFÉL VÁLASZTÓ ----
+        ugyfel_box = Qw.QGroupBox("Ügyfél kiválasztása")
+        ugyfel_lay = Qw.QVBoxLayout(ugyfel_box)
+
+        self.cmb_ugyfel = Qw.QComboBox()
+        self.cmb_ugyfel.setEditable(True)  # kereshető
+        self.cmb_ugyfel.setInsertPolicy(Qw.QComboBox.NoInsert)
+        self.cmb_ugyfel.setPlaceholderText("Kezdj el gépelni (név keresés)…")
+
+        ugyfel_lay.addWidget(self.cmb_ugyfel)
+
+        self.lbl_ugyfel_info = Qw.QLabel("")
+        self.lbl_ugyfel_info.setWordWrap(True)
+        ugyfel_lay.addWidget(self.lbl_ugyfel_info)
+
+        lay.addWidget(ugyfel_box)
+
+        # ---- CSV TALLÓZÁS + SZÁMÍTÁS ----
+        row = Qw.QHBoxLayout()
+        self.btn_run = Qw.QPushButton("CSV tallózás + számítás…")
+        row.addWidget(self.btn_run)
+        lay.addLayout(row)
+
+        self.preview = Qw.QTableWidget()
+        lay.addWidget(Qw.QLabel("Előnézet (anyagigény):"))
+        lay.addWidget(self.preview, 1)
+
+        self.btn_next = Qw.QPushButton("Tovább →")
+        self.btn_next.setEnabled(False)
+        lay.addWidget(self.btn_next)
+
+        self.btn_run.clicked.connect(self.run_calc)
+        self.btn_next.clicked.connect(lambda: self.wiz.goto(1))
+
+        self.df = None
+        self.ugyfelek_df = None
+
+        # ügyfelek betöltése induláskor
+        self._load_ugyfelek()
+
+        # amikor ügyfelet vált, írjunk ki infót és mentsük state-be
+        self.cmb_ugyfel.currentIndexChanged.connect(self._ugyfel_changed)
+
+    def _load_ugyfelek(self):
         """
-        path, _ = Qw.QFileDialog.getOpenFileName(
+        Innen olvasod be az ügyféllistát.
+        Állítsd be a saját útvonaladra!
+        """
+        # példa: project_root/data/ugyfelek.xlsx
+        '''
+        base_dir = os.path.dirname(__file__)
+        project_root = os.path.abspath(os.path.join(base_dir, ".."))
+        data_dir = os.path.join(project_root, "data")
+        path = os.path.join(data_dir, "ugyfelek.xlsx")
+        
+
+        if not os.path.exists(path):
+            self.lbl_ugyfel_info.setText(f"⚠️ Nem találom az ügyféllistát: {path}")
+            return
+        '''
+
+        #try:
+        link = "https://1drv.ms/x/c/595ECD328626FCDE/IQCAAzRsxtjJRJhSfNq79RZ8AWpcUCbT_AV30IeTavTymUc?e=lrUfMC"
+        self.ugyfelek_df = self.wiz.faj.excel_beolvas_onedrive_linkbol(megosztasi_link=link, cel_mappa="data",fajlnev="ugyfelek_adat.xlsx")
+        print(self.ugyfelek_df)
+        '''
+        except Exception as e:
+            self.lbl_ugyfel_info.setText(f"⚠️ Ügyféllista hiba: {e}")
+            return
+        '''
+        self.cmb_ugyfel.clear()
+        self.cmb_ugyfel.addItem("— válassz ügyfelet —")
+        for nev in self.ugyfelek_df["Név"].tolist():
+            self.cmb_ugyfel.addItem(nev)
+
+    def _ugyfel_changed(self):
+        if self.ugyfelek_df is None or self.ugyfelek_df.empty:
+            return
+
+        nev = self.cmb_ugyfel.currentText().strip()
+        if not nev or nev.startswith("—"):
+            self.wiz.ugyfel = None
+            self.lbl_ugyfel_info.setText("")
+            return
+
+        row = self.ugyfelek_df[self.ugyfelek_df["Név"] == nev]
+        if row.empty:
+            self.wiz.ugyfel = {"Név": nev}  # legalább a név meglegyen
+            self.lbl_ugyfel_info.setText("")
+            return
+
+        rec = row.iloc[0].to_dict()
+        self.wiz.ugyfel = rec  # <- ezt viszed tovább Step3-ba
+
+        # opcionális: infó kiírás (ha vannak ilyen oszlopok)
+        parts = []
+        for col in ["Email", "Tel", "Város", "Lakcím", "Emelet, ajtó"]:
+            if col in rec and str(rec[col]).strip():
+                parts.append(f"{col}: {rec[col]}")
+        self.lbl_ugyfel_info.setText("\n".join(parts))
+
+    def run_calc(self):
+        # 0) ügyfél ellenőrzés
+        if getattr(self.wiz, "ugyfel", None) is None:
+            Qw.QMessageBox.warning(self, "Hiányzik", "Előbb válassz ügyfelet!")
+            return
+
+        # 1) CSV tallózás
+        csv_path, _ = Qw.QFileDialog.getOpenFileName(
             self, "Szabásjegyzék CSV kiválasztása", "",
             "CSV fájl (*.csv);;Minden fájl (*.*)"
         )
-        if path:
-            self.path_edit.setText(path)
-        """
-        self.df = self.wiz.arajanlatszerk.adatbeolvaso()
-
-    def run_calc(self):
-        """
-        csv_path = self.path_edit.text().strip()
-        if not csv_path or not os.path.exists(csv_path):
-            Qw.QMessageBox.warning(self, "Hiba", "Érvénytelen CSV útvonal.")
+        if not csv_path:
             return
 
-        self.wiz.csv_path = csv_path
-
-
+        # 2) a te jelenlegi logikád (ahogy írtad)
+        # FONTOS: ha a te adatbeolvaso() maga tallóz, akkor a fenti QFileDialog nem kell.
+        # Itt most átadjuk neki a csv_path-ot, ha tudod úgy módosítani.
         try:
-            df = pd.read_csv(csv_path, encoding="utf-8", sep=None, engine="python")
+            # ajánlott: a te adatbeolvaso fogadjon path-ot
+            # self.df = self.wiz.arajanlatszerk.adatbeolvaso(csv_path)
+            self.df = self.wiz.arajanlatszerk.adatbeolvaso()
+
+            self.wiz.arajanlatszerk.szabjegyszerk.anyagigeny_szamitasa()
+            anyagigeny_df = self.wiz.arajanlatszerk.szabjegyszerk.anyagigeny
+
         except Exception as e:
-            Qw.QMessageBox.critical(self, "CSV hiba", str(e))
+            Qw.QMessageBox.critical(self, "Hiba", f"Nem sikerült feldolgozni:\n{e}")
             return
-        print(df)
-        """
-
-        self.wiz.arajanlatszerk.szabjegyszerk.anyagigeny_szamitasa()
-
-        anyagigeny_df =  self.wiz.arajanlatszerk.szabjegyszerk.anyagigeny
 
         self.wiz.anyagigeny_df = anyagigeny_df
         self.wiz.nyomtathato_df = None
