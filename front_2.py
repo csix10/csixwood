@@ -1,4 +1,4 @@
-import os
+import math
 import pandas as pd
 import PySide6.QtWidgets as Qw
 from PySide6.QtCore import Qt
@@ -359,32 +359,8 @@ class Step1CsvImport(Qw.QGroupBox):
         self.cmb_ugyfel.currentIndexChanged.connect(self._ugyfel_changed)
 
     def _load_ugyfelek(self):
-        """
-        Innen olvasod be az ügyféllistát.
-        Állítsd be a saját útvonaladra!
-        """
-        # példa: project_root/data/ugyfelek.xlsx
-        '''
-        base_dir = os.path.dirname(__file__)
-        project_root = os.path.abspath(os.path.join(base_dir, ".."))
-        data_dir = os.path.join(project_root, "data")
-        path = os.path.join(data_dir, "ugyfelek.xlsx")
-        
-
-        if not os.path.exists(path):
-            self.lbl_ugyfel_info.setText(f"⚠️ Nem találom az ügyféllistát: {path}")
-            return
-        '''
-
-        #try:
         link = "https://1drv.ms/x/c/595ECD328626FCDE/IQCAAzRsxtjJRJhSfNq79RZ8AWpcUCbT_AV30IeTavTymUc?e=lrUfMC"
         self.ugyfelek_df = self.wiz.faj.excel_beolvas_onedrive_linkbol(megosztasi_link=link, cel_mappa="data",fajlnev="ugyfelek_adat.xlsx")
-        print(self.ugyfelek_df)
-        '''
-        except Exception as e:
-            self.lbl_ugyfel_info.setText(f"⚠️ Ügyféllista hiba: {e}")
-            return
-        '''
         self.cmb_ugyfel.clear()
         self.cmb_ugyfel.addItem("— válassz ügyfelet —")
         for nev in self.ugyfelek_df["Név"].tolist():
@@ -407,13 +383,32 @@ class Step1CsvImport(Qw.QGroupBox):
             return
 
         rec = row.iloc[0].to_dict()
-        self.wiz.ugyfel = rec  # <- ezt viszed tovább Step3-ba
+        self.wiz.ugyfel = rec # <- ezt viszed tovább Step3-ba
+        self.wiz.arajanlatszerk.ugyfel = rec
+        print(rec)
 
-        # opcionális: infó kiírás (ha vannak ilyen oszlopok)
+        #infó kiírás
         parts = []
         for col in ["Email", "Tel", "Város", "Lakcím", "Emelet, ajtó"]:
-            if col in rec and str(rec[col]).strip():
-                parts.append(f"{col}: {rec[col]}")
+            if col not in rec:
+                continue
+
+            val = rec[col]
+
+            # nan / None kiszűrése
+            if val is None or (isinstance(val, float) and math.isnan(val)):
+                continue
+
+            # Tel speciális kezelés
+            if col == "Tel":
+                val = self.wiz.arajanlatszerk.telefonszam_formazo(val)
+                if not val:  # ha üres lett
+                    continue
+
+            # általános string ellenőrzés
+            if str(val).strip():
+                parts.append(f"{col}: {val}")
+
         self.lbl_ugyfel_info.setText("\n".join(parts))
 
     def run_calc(self):
@@ -422,20 +417,7 @@ class Step1CsvImport(Qw.QGroupBox):
             Qw.QMessageBox.warning(self, "Hiányzik", "Előbb válassz ügyfelet!")
             return
 
-        # 1) CSV tallózás
-        csv_path, _ = Qw.QFileDialog.getOpenFileName(
-            self, "Szabásjegyzék CSV kiválasztása", "",
-            "CSV fájl (*.csv);;Minden fájl (*.*)"
-        )
-        if not csv_path:
-            return
-
-        # 2) a te jelenlegi logikád (ahogy írtad)
-        # FONTOS: ha a te adatbeolvaso() maga tallóz, akkor a fenti QFileDialog nem kell.
-        # Itt most átadjuk neki a csv_path-ot, ha tudod úgy módosítani.
         try:
-            # ajánlott: a te adatbeolvaso fogadjon path-ot
-            # self.df = self.wiz.arajanlatszerk.adatbeolvaso(csv_path)
             self.df = self.wiz.arajanlatszerk.adatbeolvaso()
 
             self.wiz.arajanlatszerk.szabjegyszerk.anyagigeny_szamitasa()

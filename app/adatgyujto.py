@@ -3,7 +3,7 @@ import pandas as pd
 import re
 from bs4 import BeautifulSoup
 from datetime import datetime
-from typing import Tuple, Dict
+from typing import Dict, Tuple
 
 class Jotform:
     def __init__(self):

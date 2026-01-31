@@ -5,14 +5,14 @@ from openpyxl.drawing.image import Image
 import openpyxl.styles as stilus
 import os
 import pandas as pd
+import math
 
 class Arajanlat:
-    def __init__(self, vezetek_nev = "", kereszt_nev = "", munkadij_lepesek = ""):
+    def __init__(self, ugyfel = "", munkadij_lepesek = ""):
         self.faj = faj.BeolvasKiirat()
         self.df = None
         self.szabjegyszerk = None
-        self.vezetek_nev = vezetek_nev
-        self.kereszt_nev = kereszt_nev
+        self.ugyfel = ugyfel
         self.munkadijlepesek = munkadij_lepesek
         self.wb, self.ws = self.faj.szerkesztett_excel_beolvaso("minta_arajanlat.xlsx")
         self.sor = 17
@@ -81,68 +81,66 @@ class Arajanlat:
 
         self.ws.add_image(kep, cella)
 
-    def szemelyes_adatok_jotform(self):
-        if self.vezetek_nev == "" and self.kereszt_nev == "":
-            print("Nincs név megadva, a személyes adatok nem lettek beírva!")
-            return
-        jotform = adatgyujto.Jotform().jotform_to_dataframe()
-        adat = jotform[(jotform["name.first"] == self.vezetek_nev) & (jotform["name.last"] == self.kereszt_nev)]
+    def telefonszam_formazo(self, v):
+        if v is None:
+            return ""
 
-        if not adat.empty:
-            email = adat["email"].dropna().iloc[0] if adat["email"].notna().any() else ""
-            tel = adat["phonenumber"].dropna().iloc[0] if adat["phonenumber"].notna().any() else ""
-            city = adat["address.city"].dropna().iloc[0] if adat["address.city"].notna().any() else ""
-            addr1 = adat["address.addr_line1"].dropna().iloc[0] if adat["address.addr_line1"].notna().any() else ""
-            addr2 = adat["address.addr_line2"].dropna().iloc[0] if adat["address.addr_line2"].notna().any() else ""
+        # nan float
+        if isinstance(v, float):
+            if math.isnan(v):
+                return ""
+            v = int(v)
 
-            cim = f"{city}, {addr1} {addr2}".strip(", ").strip() # csak akkor rakjon vesszőt, ha van város
+        s = str(v).strip()
 
-            center_align = stilus.Alignment(horizontal="left", vertical="center",  wrap_text=True)
+        if not s:
+            return ""
 
-            self.ws["G9"] = self.vezetek_nev + " " + self.kereszt_nev
-            self.ws["G9"].alignment = center_align
+        # ".0" a végén stringként
+        if s.endswith(".0"):
+            s = s[:-2]
 
-            self.ws["G10"] = tel
-            self.ws["G10"].alignment = center_align
+        if s.startswith("+"):
+            return s
 
-            self.ws["G11"] = email
-            self.ws["G11"].alignment = center_align
-
-            self.ws["G12"] = cim
-            self.ws["G12"].alignment = center_align
+        return f"+{s}"
 
     def szemelyes_adatok_onedrive(self):
-        if self.vezetek_nev == "" and self.kereszt_nev == "":
+        if self.ugyfel == "":
             print("Nincs név megadva, a személyes adatok nem lettek beírva!")
             return
-
+        """
         link = "https://1drv.ms/x/c/595ECD328626FCDE/IQCAAzRsxtjJRJhSfNq79RZ8AWpcUCbT_AV30IeTavTymUc?e=lrUfMC"
         ugyfel = (self.faj.excel_beolvas_onedrive_linkbol(megosztasi_link=link, cel_mappa="data", fajlnev="ugyfelek_adat.xlsx"))
         nev = self.vezetek_nev + " " + self.kereszt_nev
         adat = ugyfel[(ugyfel["Név"] == nev)]
+        """
 
-        if not adat.empty:
-            email = adat["Email"].dropna().iloc[0] if adat["Email"].notna().any() else ""
-            tel = adat["Tel"].dropna().iloc[0] if adat["Tel"].notna().any() else ""
-            city = adat["Város"].dropna().iloc[0] if adat["Város"].notna().any() else ""
-            addr1 = adat["Lakcím"].dropna().iloc[0] if adat["Lakcím"].notna().any() else ""
-            addr2 = adat["Emelet, ajtó"].dropna().iloc[0] if adat["Emelet, ajtó"].notna().any() else ""
+        def clean(v):
+            return "" if v is None or (isinstance(v, float) and math.isnan(v)) else str(v)
 
-            cim = f"{city}, {addr1} {addr2}".strip(", ").strip()  # csak akkor rakjon vesszőt, ha van város
+        nev = clean(self.ugyfel.get("Név"))
+        email = clean(self.ugyfel.get("Email"))
+        tel = clean(self.ugyfel.get("Tel"))
+        city = clean(self.ugyfel.get("Város"))
+        addr1 = clean(self.ugyfel.get("Lakcím"))
+        addr2 = clean(self.ugyfel.get("Emelet, ajtó"))
 
-            center_align = stilus.Alignment(horizontal="left", vertical="center", wrap_text=True)
+        cim = f"{city}, {addr1} {addr2}".strip(", ").strip()  # csak akkor rakjon vesszőt, ha van város
 
-            self.ws["G9"] = self.vezetek_nev + " " + self.kereszt_nev
-            self.ws["G9"].alignment = center_align
+        center_align = stilus.Alignment(horizontal="left", vertical="center", wrap_text=True)
 
-            self.ws["G10"] = tel
-            self.ws["G10"].alignment = center_align
+        self.ws["G9"] = nev
+        self.ws["G9"].alignment = center_align
 
-            self.ws["G11"] = email
-            self.ws["G11"].alignment = center_align
+        self.ws["G10"] = self.telefonszam_formazo(tel)
+        self.ws["G10"].alignment = center_align
 
-            self.ws["G12"] = cim
-            self.ws["G12"].alignment = center_align
+        self.ws["G11"] = email
+        self.ws["G11"].alignment = center_align
+
+        self.ws["G12"] = cim
+        self.ws["G12"].alignment = center_align
 
     def anyagok_beirasa(self):
         anyagjegyzek, nyomtathato_szabjegy = self.szabjegyszerk.anyagjegyzek_szamitasa()
@@ -166,7 +164,7 @@ class Arajanlat:
             "Borovi": 10.3,
         }
 
-        if not self.ws["G12"].value:
+        if not self.ugyfel.get("Város") or not self.ugyfel.get("Lakcím"):
             print("Nincs cím megadva, ezért nem történt utdíj kalkulálás.")
             return
 
@@ -174,7 +172,7 @@ class Arajanlat:
         for bolt in self.szabjegyszerk.boltok:
             plusztav += boltoktav[bolt]
 
-        utdij = adatgyujto.Utdij_kalkulator(self.ws["G12"].value)
+        utdij = adatgyujto.Utdij_kalkulator(self.ugyfel.get("Város") + ", "+ self.ugyfel.get("Lakcím"))
         fogyasztas = utdij.utdij_kalkulacio(plusztav)
 
         sorok = [
