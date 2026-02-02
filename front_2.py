@@ -619,8 +619,8 @@ class Step3Export(Qw.QGroupBox):
         # araj.Arajanlat(...).elkeszites(save_path=save_path, ...)
         """
         self.wiz.arajanlatszerk.munkadijlepesek = self.wiz.munkalepesek
+        self.wiz.arajanlatszerk.munkad_erintettanyag = self.wiz.hozzarendeles
         self.wiz.arajanlatszerk.elkeszites()
-        #Qw.QMessageBox.information(self, "Kész", f"Elmentve ide:\n{save_path}")
 
 if __name__ == "__main__":
     app = Qw.QApplication([])

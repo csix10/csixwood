@@ -8,7 +8,7 @@ import pandas as pd
 import math
 
 class Arajanlat:
-    def __init__(self, ugyfel = "", munkadij_lepesek = ""):
+    def __init__(self, ugyfel = "", munkadij_lepesek = "", munkad_erintettanyag=""):
         self.faj = faj.BeolvasKiirat()
         self.df = None
         self.szabjegyszerk = None
@@ -17,6 +17,7 @@ class Arajanlat:
         self.wb, self.ws = self.faj.szerkesztett_excel_beolvaso("minta_arajanlat.xlsx")
         self.sor = 17
         self.kezdosor = self.sor
+        self.munkad_erintettanyag = munkad_erintettanyag
 
     def adatbeolvaso(self):
         self.df = self.faj.csv_beolvas_df()
@@ -200,10 +201,10 @@ class Arajanlat:
                                        columns=["Anyag", "Szin", "URL", "Mennyiseg", "Mertekegyseg", "Egysegar", "Osszar"])
 
         self.tablazat_tolto(anyagjegyzek_df)
-
+    '''
     def munkadij_beiras(self):
         sorok = []
-
+        self.szabjegyszerk.anyagigeny
         mertek_dict = getattr(self.szabjegyszerk, "mertekegyseg_dict", {})
 
         for sor in (self.munkadijlepesek or []):
@@ -242,6 +243,96 @@ class Arajanlat:
         munkajegyzek_df = pd.DataFrame(
             sorok,
             columns=["Anyag", "Szin", "URL", "Mennyiseg", "Mertekegyseg", "Egysegar", "Osszar"]
+        )
+
+        self.tablazat_tolto(munkajegyzek_df)
+    '''
+
+    def _munkadij_mennyiseg_szamitas(self, munkanev: str, szamtip: str) -> float:
+        """
+        Munkadíj mennyiség számítása az anyagigény DataFrame-ből.
+        Azonos Anyag különböző Színeit ÖSSZEADJA.
+        """
+
+        # Óra külön kezelés (később bővíthető)
+        if szamtip == "Ora":
+            return 0.0
+
+        # érintett anyagok (ANYAG név szerint)
+        erintett_anyagok = self.munkad_erintettanyag.get(munkanev, [])
+        if not erintett_anyagok:
+            return 0.0
+
+        df = self.szabjegyszerk.anyagigeny
+        if df is None or df.empty:
+            return 0.0
+
+        # ha nincs ilyen oszlop
+        if szamtip not in df.columns:
+            return 0.0
+
+        # csak az érintett ANYAGOK (színtől függetlenül!)
+        mask = df["Anyag"].astype(str).isin(erintett_anyagok)
+
+        try:
+            return float(
+                df.loc[mask, szamtip]
+                .fillna(0)
+                .sum()
+            )
+        except Exception:
+            return 0.0
+
+    def munkadij_beiras(self):
+        sorok = []
+
+        mertek_dict = self.szabjegyszerk.mertekegyseg_dict
+
+        for sor in self.munkadijlepesek:
+            nev = sor.get("nev", "")
+            leiras = sor.get("leiras", "")
+            szamtip = sor.get("szamtip", "")
+            ar = sor.get("ar", 0)
+
+            # mértékegység
+            mertekegyseg = mertek_dict.get(szamtip, "")
+
+            # egységár
+            try:
+                ar = float(ar)
+            except Exception:
+                ar = 0.0
+
+            # mennyiség számítás az anyagigényből
+            menny = self._munkadij_mennyiseg_szamitas(nev, szamtip)
+
+            # összár
+            osszar = menny * ar
+
+            sorok.append({
+                "Anyag": nev,
+                "Szin": leiras,
+                "URL": "",
+                "Mennyiseg": menny,
+                "Mertekegyseg": mertekegyseg,
+                "Egysegar": ar,
+                "Osszar": osszar
+            })
+
+        if not sorok:
+            print("ℹ️ Nincs munkadíj lépés.")
+            return
+
+        self.sor += 4
+        self.kezdosor = self.sor
+
+        munkajegyzek_df = pd.DataFrame(
+            sorok,
+            columns=[
+                "Anyag", "Szin", "URL",
+                "Mennyiseg", "Mertekegyseg",
+                "Egysegar", "Osszar"
+            ]
         )
 
         self.tablazat_tolto(munkajegyzek_df)
