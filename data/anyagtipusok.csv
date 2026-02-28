@@ -4,7 +4,7 @@ vastag_elzaro;Vastag elzáró;Osz_Hosz;1.1;Karnis
 vekony_elzaro;Vékony élzáró;Osz_Hosz;1.1;Karnis
 munkalap;Munkalap;Osz_Hosz;1.1;Karnis
 borovi fenyo;Borovi fenyő;Terfogat;2;Borovi
-lucfenyo;Lucfenyő;Terfogat;2;Borovi
+luc fenyo;Lucfenyő;Terfogat;2;Borovi
 dio;Dió;Terfogat;2;Borovi
 tablasitott borovi;Táblásitott borovi;Terulet;1.5;Borovi
 tablasitott luc;Táblásitott luc;Terulet;1.5;Borovi
@@ -12,6 +12,11 @@ tablasitott tolgy;Táblásitott tölgy;Terulet;1.5;Borovi
 tolgy;Tölgy;Terfogat;2;Borovi
 bukk;Bükk;Terfogat;2;Borovi
 retegelt lemez;Rétegelt lemez;Terulet;1.5;Borovi
+retegelt fenyo;Rétegelt fenyő lemez;Terulet;1.5;Borovi
+retegelt nyir;Rétegelt nyír lemez;Terulet;1.5;Borovi
+OSB;OSB lap;Terulet;1.5;Borovi
+ragasztott gerenda;Ragasztott gerenda;Terfogat;1.5;Borovi
+hajopadlo;Hajópadló;Terulet;1.2;Borovi
 HDF;Hátlap lemez;Terulet;1.1;Karnis
 MDF;MDF;Terulet;1.5;Karnis
 fuggeszto;Függesztő;DB;1;Butorkellek
@@ -23,5 +28,8 @@ csavar;Csavar;DB;1;Butorkellek
 vallfa;Válfa tartó;DB;1;Butorkellek
 macskaajto;Macska ajtó;BD;1;-
 kilincs;Kilincs;BD;1;-
-sin;Sín;DB;-
+sin;Sín;DB;1;Butorkellek
 tukor;Tükör;Terulet;1.1;-
+badog;Bádoglemez;Osz_Hosz;1.3;-
+zsindely;Zsindely;Terulet;1.3;-
+fiok;Fiók alkatrész;DB;1;Butorkellek

@@ -203,7 +203,7 @@ class Utdij_kalkulator:
         return {
             "indulas": self.hely_1,
             "erkezes": self.hely_2,
-            "tavolsag_km": round(rt["distance_km"] + plusztav, 1),
+            "tavolsag_km": f"{rt["distance_km"]}+{plusztav}", #round(rt["distance_km"] + plusztav, 1),
             "menetido_perc": round(rt["duration_min"]),
             "fogyasztas_l100": self.l_per_100km,
             "literar_huf": fogyasztas["literar_huf"],
@@ -211,5 +211,5 @@ class Utdij_kalkulator:
             "uzemanyag_koltseg_huf": round(fogyasztas["koltseg"]),
             "amortizacio_per_km" : self.autoamortizacio_per_km,
             "auto_amortizacio_huf": round(amortizacio),
-            "osszesen_huf": round((fogyasztas["koltseg"] + amortizacio) * 2)
+            "osszesen_huf": f"({fogyasztas["koltseg"]}+{amortizacio})*2" #round((fogyasztas["koltseg"] + amortizacio) * 2)
         }
