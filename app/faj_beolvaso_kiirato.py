@@ -186,6 +186,28 @@ class BeolvasKiirat:
         root.destroy()
         return path if path else None
 
+    def kep_tallozo(self) -> list[str] | None:
+        """
+        Több kép kiválasztása egyszerre.
+        Visszaadja a kiválasztott fájlok listáját,
+        vagy None-t ha a user Cancel.
+        """
+        root = tk.Tk()
+        root.withdraw()
+        root.attributes("-topmost", True)
+
+        paths = filedialog.askopenfilenames(
+            title="Válaszd ki a képeket",
+            filetypes=[
+                ("Képfájlok", "*.png *.jpg *.jpeg *.webp *.bmp *.tif *.tiff"),
+                ("Minden fájl", "*.*"),
+            ],
+        )
+
+        root.destroy()
+
+        return list(paths) if paths else None
+
     def csv_utbol_arajanlat_ut(self) -> str | None:
         """
         Ha a bemeneti útvonal követi a sémát:
@@ -206,6 +228,42 @@ class BeolvasKiirat:
         chosen = self.faj_tallozo(fajnev = "arajanlat.xlsx")
         return chosen
 
+    def png_utbol_latvany_ut(self, ut) -> str | None:
+        """
+        Ha a bemeneti útvonal követi a sémát:
+          .../ugyfelek/<ugyfel>/<projekt>/latvany/<valami>.png
+        akkor:
+          .../ugyfelek/<ugyfel>/<projekt>/latvany/latvany_<projekt>.pdf
+
+        Ha nem követi:
+          felugró tallózó ablakban kiválasztható mentési hely.
+        """
+        p = Path(ut)
+
+        # --- automatikus útvonal, ha a séma stimmel ---
+        if p.suffix.lower() == ".png" and p.parent.name.lower() == "latvany":
+            projekt_mappa = p.parent.parent
+            projektnev = projekt_mappa.name
+
+            latvany_mappa = projekt_mappa
+            out_path = latvany_mappa / f"latvany_{projektnev}.pdf"
+            return str(out_path)
+
+        # --- fallback: Save As ---
+        root = tk.Tk()
+        root.withdraw()
+        root.attributes("-topmost", True)
+
+        path = filedialog.asksaveasfilename(
+            title="Hova mentsem a látvány PDF-et?",
+            defaultextension=".pdf",
+            filetypes=[("PDF fájl", "*.pdf")],
+            initialfile="latvany.pdf",
+        )
+
+        root.destroy()
+        return path if path else None
+    '''
     def csv_utbol_arajanlat_ut(self) -> str:
         """
         Bemenet:  .../ugyfelek/<ugyfel>/<projekt>/<valami>.csv
@@ -217,4 +275,4 @@ class BeolvasKiirat:
 
         out_path = projekt_mappa / f"arajanlat_{projektnev}.xlsx"
         return str(out_path)
-
+    '''
