@@ -47,7 +47,11 @@ class Arajanlat:
             menny = row.get("Mennyiseg", "")
             egysegar = row.get("Egysegar", "")
 
-            self.ws.cell(row=self.sor, column=6, value=f"=ROUND({menny},2)")
+            self.ws.cell(
+                row=self.sor,
+                column=6,
+                value=f"=ROUNDUP({menny},2)"
+            )
 
             self.ws.cell(row=self.sor, column=7, value=row.get("Mertekegyseg", ""))
 
@@ -151,7 +155,7 @@ class Arajanlat:
 
         plusztav = 0
         for bolt in self.szabjegyszerk.boltok:
-            plusztav = f"={plusztav}+{boltoktav[bolt]}"
+            plusztav = f"{plusztav}+{boltoktav[bolt]}"
 
         utdij = adatgyujto.Utdij_kalkulator(self.ugyfel.get("Város") + ", "+ self.ugyfel.get("Lakcím"))
         fogyasztas = utdij.utdij_kalkulacio(plusztav)

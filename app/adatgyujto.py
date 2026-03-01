@@ -198,8 +198,9 @@ class Utdij_kalkulator:
 
     def utdij_kalkulacio(self, plusztav) -> Dict[str, float]:
         rt = self.route_distance_time(self.hely_1, self.hely_2)
-        fogyasztas = self.fuel_cost(rt["distance_km"] + plusztav)
-        amortizacio = (rt["distance_km"] + plusztav) * self.autoamortizacio_per_km
+        fogyasztas = self.fuel_cost(rt["distance_km"])#self.fuel_cost(rt["distance_km"] + float(eval(plusztav)))
+        fogyasztas_plusz = self.fuel_cost(float(eval(plusztav)))
+        amortizacio = (rt["distance_km"] + float(eval(plusztav))) * self.autoamortizacio_per_km
         return {
             "indulas": self.hely_1,
             "erkezes": self.hely_2,
@@ -207,9 +208,9 @@ class Utdij_kalkulator:
             "menetido_perc": round(rt["duration_min"]),
             "fogyasztas_l100": self.l_per_100km,
             "literar_huf": fogyasztas["literar_huf"],
-            "literek": round(fogyasztas["liter"], 2),
-            "uzemanyag_koltseg_huf": round(fogyasztas["koltseg"]),
+            "literek": f"{fogyasztas["liter"]}+{fogyasztas_plusz["liter"]}",
+            "uzemanyag_koltseg_huf": f"{fogyasztas["koltseg"]}+{fogyasztas_plusz["koltseg"]}",
             "amortizacio_per_km" : self.autoamortizacio_per_km,
             "auto_amortizacio_huf": round(amortizacio),
-            "osszesen_huf": f"({fogyasztas["koltseg"]}+{amortizacio})*2" #round((fogyasztas["koltseg"] + amortizacio) * 2)
+            "osszesen_huf": f"({fogyasztas["koltseg"]}+{fogyasztas_plusz["koltseg"]}+{amortizacio})*2" #round((fogyasztas["koltseg"] + amortizacio) * 2)
         }

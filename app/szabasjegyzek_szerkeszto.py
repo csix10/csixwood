@@ -111,6 +111,13 @@ class SzabasjegyzekSzerkeszto:
                 "ar": "0 ft"}
             else:
                 return adatok
+        elif hely == "Borovi":
+            if "Borovi" not in self.boltok:
+                self.boltok.append("Borovi")
+            return {"nev": "",
+                    "url": "",
+                    "ar": "0 ft"}
+
         else:
             return { "nev": "",
                 "url": "",
