@@ -9,6 +9,7 @@ class SzabasjegyzekSzerkeszto:
         self.boltok =[]
         self.anyagigeny = pd.DataFrame()
         self.nyomtathato_szabjegy = pd.DataFrame()
+        self.anyagtip = faj.BeolvasKiirat().csv_beolvasasa_databol("anyagtipusok.csv")
         self.mertekegyseg_dict = {
                 "Osz_Hosz": "m",
                 "Terulet": "m²",
@@ -35,7 +36,7 @@ class SzabasjegyzekSzerkeszto:
 
     def azonos_sorok_szurese(self, kulcsok=None, db_col="DB"):
         if kulcsok is None:
-            kulcsok = ["Nev", "Hosz", "Szel", "Vas", "Anyag", "Szin", "Elzaras", "Anyag"]
+            kulcsok = ["Nev", "Hosz", "Szel", "Vas", "Anyag", "Szin", "Elzaras"]
         self.df.columns = self.df.columns.str.strip()
         self.df[db_col] = pd.to_numeric(self.df[db_col], errors="coerce").fillna(0)
 
@@ -56,6 +57,133 @@ class SzabasjegyzekSzerkeszto:
     def mm_eltavolitasa(self):
         for col in ["Hosz", "Szel", "Vas"]:
             self.df[col] = self.df[col].str.replace("mm", "", regex=False).str.strip().astype(int)
+
+    '''def atforfato(self):
+        valogatot = pd.DataFrame()
+        lehetseges_melyseg = []
+        for sor in self.df:
+            if sor["Hosz"]>600:
+                valogatot.append(sor)
+                if sor["DB"]>=2:
+                    lehetseges_melyseg.append(sor["Szel"])
+        melyseg = []
+        for m in lehetseges_melyseg:
+            i=0
+            for n in lehetseges_melyseg:
+                if m<n and m<=m+34:
+                    i=1
+            if i==0:
+                melyseg.append(m)
+        modostott_df = pd.DataFrame()
+        for sor in self.df:
+            if sor in valogatot:
+                modostott_df.append(sor)
+            else:
+                for m in melyseg:
+                    if m-34<=sor["Hosz"] and sor["Hosz"]<= m:
+                        i=0
+                        for n in melyseg:
+                            if n - 34 <= sor["Szel"] and sor["Szel"] <= n:
+                                modostott_df.append(sor)
+                                i=1
+                                break
+                        if i==0:
+                            hosz=sor["Hosz"]
+                            sor["Hosz"]=sor["Szel"]
+                            sor["Szel"]=hosz
+                            modostott_df.append(sor)
+
+        self.df = modostott_df'''
+
+    def atforgato(self, df):
+        """
+        A self.df alapján kiválasztja azokat a sorokat, amelyek:
+        - vagy eleve megfelelnek a feltételnek,
+        - vagy átforgatva (Hossz <-> Szél) lesznek megfelelőek.
+        """
+
+        # 1) Kiválogatott sorok: Hosz > 600
+        valogatott_mask = df["Hosz"] > 600
+        valogatott_df = df[valogatott_mask].copy()
+
+        # 2) Lehetséges mélységek: a kiválogatott sorok közül, ahol DB >= 2
+        lehetseges_melyseg = (
+            df.loc[valogatott_mask & (df["DB"] >= 2), "Szel"]
+            .dropna()
+            .astype(float)
+            .tolist()
+        )
+
+        # 3) Mélységek szűrése:
+        #    csak azokat tartjuk meg, amelyekhez nincs nagyobb érték 34-en belül
+        #    tehát egy közeli csoportból a legnagyobb marad meg
+        lehetseges_melyseg = sorted(set(lehetseges_melyseg))
+        melysegek = []
+
+        for m in lehetseges_melyseg:
+            van_nagyobb_kozelben = any(m < n <= m + 34 for n in lehetseges_melyseg)
+            if not van_nagyobb_kozelben:
+                melysegek.append(m)
+        print(melysegek)
+
+        def illeszkedik_melyseghez(ertek: float) -> bool:
+            """Igaz, ha az érték beleesik valamelyik [m-34, m] intervallumba."""
+            return any(m - 34 <= ertek <= m for m in melysegek)
+
+        # 4) Új DataFrame sorainak összeállítása
+        uj_sorok = []
+
+        for idx, sor in df.iterrows():
+            sor_dict = sor.to_dict()
+
+            # Ha eleve a kiválogatottak között van, változtatás nélkül marad
+            if valogatott_mask.loc[idx]:
+                uj_sorok.append(sor_dict)
+                continue
+
+            hosz = float(sor["Hosz"])
+            szel = float(sor["Szel"])
+
+            # Csak akkor foglalkozunk vele, ha a hossz beleesik valamely mélység-intervallumba
+            if illeszkedik_melyseghez(hosz):
+                # Ha a szélesség is beleesik valamely mélység-intervallumba, marad
+                if illeszkedik_melyseghez(szel):
+                    uj_sorok.append(sor_dict)
+                else:
+                    # különben átforgatjuk
+                    sor_dict["Hosz"], sor_dict["Szel"] = szel, hosz
+                    uj_sorok.append(sor_dict)
+            else:
+                uj_sorok.append(sor_dict)
+
+        return pd.DataFrame(uj_sorok, columns=df.columns)
+
+    def atforgato_anyag_szin_szerint(self):
+        """
+        Az atforgató algoritmust külön futtatja
+        minden (Anyag, Szin) csoportra.
+        """
+
+        df = self.df.copy()
+        eredmeny = []
+
+        for (anyag, szin), csoport in df.groupby(["Anyag", "Szin"], dropna=False):
+            talalat = self.anyagtip.loc[
+                self.anyagtip["Anyag"] == anyag, "Szamitasialap"
+            ]
+
+            if talalat.empty:
+                uj_df = csoport
+            else:
+                alap = talalat.iloc[0]
+                if alap == "Terulet":
+                    uj_df = self.atforgato(csoport.copy())
+                else:
+                    uj_df = csoport
+
+            eredmeny.append(uj_df)
+
+        self.df = pd.concat(eredmeny, ignore_index=True)
 
     def hosz_terulet_terfogat_szamitas(self):
         self.df["Osz_Hosz"] = self.df["DB"] * self.df["Hosz"] / 1000
@@ -80,7 +208,8 @@ class SzabasjegyzekSzerkeszto:
         self.sorszam_hozzaadasa()
         self.mm_eltavolitasa()
 
-        #faj.BeolvasKiirat().df_kiiratasa_exelbe(self.df, "szabasjegyzek.xlsx", r"C:\Users\csiki\OneDrive\csixwood program\proba")
+        self.atforgato_anyag_szin_szerint()
+
         nyomtathato_szabjegy = self.df.copy()
 
         self.hosz_terulet_terfogat_szamitas()
@@ -134,8 +263,6 @@ class SzabasjegyzekSzerkeszto:
         self.anyagigeny = osszegzes
 
     def anyagjegyzek_szamitasa(self):
-        anyagtip = faj.BeolvasKiirat().csv_beolvasasa_databol("anyagtipusok.csv")
-
         if self.anyagigeny.empty:
             self.anyagigeny_szamitasa()
 
@@ -145,12 +272,12 @@ class SzabasjegyzekSzerkeszto:
         for _, row in self.anyagigeny.iterrows():
             anyag = row["Anyag"]
             szin = row["Szin"]
-            alap = anyagtip.loc[anyagtip["Anyag"] == anyag, "Szamitasialap"].squeeze()
+            alap = self.anyagtip.loc[self.anyagtip["Anyag"] == anyag, "Szamitasialap"].squeeze()
             if len(alap) == 0:
                 continue  # ha nincs meghatározva, kihagyjuk
-            hulladek_arany = float(anyagtip.loc[anyagtip["Anyag"] == anyag, "Hulladekaranya"].iloc[0])
-            kereses_helye = anyagtip.loc[anyagtip["Anyag"] == anyag, "Beszerzeshelyes"].values
-            szep_anyagnev = anyagtip.loc[anyagtip["Anyag"] == anyag, "Anyag_szep"].squeeze()
+            hulladek_arany = float(self.anyagtip.loc[self.anyagtip["Anyag"] == anyag, "Hulladekaranya"].iloc[0])
+            kereses_helye = self.anyagtip.loc[self.anyagtip["Anyag"] == anyag, "Beszerzeshelyes"].values
+            szep_anyagnev = self.anyagtip.loc[self.anyagtip["Anyag"] == anyag, "Anyag_szep"].squeeze()
 
 
             url_ar = self.bongeszo(szin, kereses_helye)
@@ -204,5 +331,3 @@ class SzabasjegyzekSzerkeszto:
         df_eredmeny = pd.DataFrame(eredmeny_list)
 
         return df_eredmeny, self.nyomtathato_szabjegy
-
-
