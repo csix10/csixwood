@@ -141,7 +141,7 @@ class BeolvasKiirat:
             sheet_name=sheet_name,
             **kwargs
         )
-
+        print(df)
         return df
 
     def utvonalellenorzo(self) -> bool:

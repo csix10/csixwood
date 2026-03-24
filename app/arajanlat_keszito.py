@@ -148,6 +148,9 @@ class Arajanlat:
             "Karnis": 7.3,
             "Borovi": 10.3,
         }
+        if self.ugyfel == "":
+            print("Nincs cím megadva, ezért nem történt utdíj kalkulálás.")
+            return
 
         if not self.ugyfel.get("Város") or not self.ugyfel.get("Lakcím"):
             print("Nincs cím megadva, ezért nem történt utdíj kalkulálás.")
