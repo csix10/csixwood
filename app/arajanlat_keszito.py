@@ -152,7 +152,7 @@ class Arajanlat:
             print("Nincs cím megadva, ezért nem történt utdíj kalkulálás.")
             return
 
-        if not self.ugyfel.get("Város") or not self.ugyfel.get("Lakcím"):
+        if not self.ugyfel.get("Város"):
             print("Nincs cím megadva, ezért nem történt utdíj kalkulálás.")
             return
 
@@ -160,7 +160,13 @@ class Arajanlat:
         for bolt in self.szabjegyszerk.boltok:
             plusztav = f"{plusztav}+{boltoktav[bolt]}"
 
-        utdij = adatgyujto.Utdij_kalkulator(self.ugyfel.get("Város") + ", "+ self.ugyfel.get("Lakcím"))
+        lakcim = self.ugyfel.get("Lakcím")
+
+        if not isinstance(lakcim, str) or not lakcim.strip():
+            utdij = adatgyujto.Utdij_kalkulator(self.ugyfel.get("Város"))
+        else:
+            utdij = adatgyujto.Utdij_kalkulator(self.ugyfel.get("Város") + ", " + lakcim)
+
         fogyasztas = utdij.utdij_kalkulacio(plusztav)
 
         sorok = [

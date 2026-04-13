@@ -78,7 +78,7 @@ class Jotform:
         return df
 
 class Utdij_kalkulator:
-    def __init__(self, erkezesi_hely: str, uzemanyag_fajta="benzin", l_per_100km = 8.5, autoamortizacio_per_km = 15, indulasi_hely="Szeged, Selmeci utca 17."):
+    def __init__(self, erkezesi_hely: str, uzemanyag_fajta="dizel", l_per_100km = 9, autoamortizacio_per_km = 50, indulasi_hely="Szeged, Selmeci utca 17."):
         self.uzemanyag_fajta = uzemanyag_fajta
         self.l_per_100km = l_per_100km
         self.hely_1 = indulasi_hely

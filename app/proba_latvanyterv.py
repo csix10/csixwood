@@ -1,11 +1,54 @@
-from pathlib import Path
-from PIL import Image
 import faj_beolvaso_kiirato as faj
+from pathlib import Path
+import requests
+import io
+from PIL import Image
+
+class AIKepJavito:
+    def __init__(self, api_kulcs: str):
+        self.api_kulcs = api_kulcs
+
+    def kep_b64_bytes(self, kep: Image.Image) -> bytes:
+        buffer = io.BytesIO()
+        kep.convert("RGB").save(buffer, format="PNG")
+        return buffer.getvalue()
+
+    def fotorealisztikus(self, kep: Image.Image) -> Image.Image:
+        response = requests.post(
+            "https://api.stability.ai/v2beta/stable-image/generate/sd3",
+            headers={
+                "authorization": f"Bearer {self.api_kulcs}",
+                "accept": "image/*"
+            },
+            files={
+                "image": ("image.png", self.kep_b64_bytes(kep), "image/png"),
+            },
+            data={
+                "prompt": (
+                    "same furniture, same layout, same colors, same structure, "
+                    "slightly improved lighting, subtle ambient occlusion, "
+                    "minor texture enhancement, keep everything identical"
+                ),
+                "negative_prompt": (
+                    "different furniture, different layout, different colors, "
+                    "new objects, changed structure, photorealistic, painting style"
+                ),
+                "control_strength": 1.0,  # ← maximális struktúra megőrzés
+                "output_format": "png",
+            },
+        )
+
+        if response.status_code != 200:
+            raise RuntimeError(f"Stability AI hiba {response.status_code}: {response.text}")
+
+        return Image.open(io.BytesIO(response.content))
+
 
 class Latvanyterv:
     def __init__(self):
         self.faj = faj.BeolvasKiirat()
         self.kepekhelye = [Path(p) for p in self.faj.kep_tallozo()]
+        self.ai_javito = AIKepJavito("sk-EDj3NnNjq8kXRDHpxMMGskfUXNtSz2zRTam55Gj93yyKPsWf")
 
     def logo_bal_also_sarok(
         self,
@@ -47,25 +90,19 @@ class Latvanyterv:
 
         return alap_kep
 
-    from pathlib import Path
-    from PIL import Image
-
     def kepekbol_pdf(self) -> Path:
-        """
-        Képekből PDF-et készít úgy, hogy minden kép egy külön oldal legyen.
-        """
-
-        if not self.kepekhelye:
-            raise ValueError("A kep_utak lista üres.")
-
         kepek = []
         try:
             for p in self.kepekhelye:
                 p = Path(p)
-                if not p.exists():
-                    raise FileNotFoundError(f"Nem találom: {p}")
-
                 with Image.open(p) as img:
+                    if self.ai_javito:
+                        print(f"AI javítás: {p.name}...")
+                        try:
+                            img = self.ai_javito.fotorealisztikus(img)
+                        except RuntimeError as e:
+                            print(f"  ⚠ AI hiba, eredeti kép marad: {e}")
+
                     img2 = self.logo_bal_also_sarok(img).convert("RGB")
                     kepek.append(img2)
 
