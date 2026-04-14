@@ -1,7 +1,9 @@
 import requests
-import fitz
-import camelot
+import re
+import pdfplumber
 import os
+import unicodedata
+import difflib
 
 import time
 from urllib.parse import quote_plus
@@ -56,53 +58,7 @@ class Arukereso:
         self.options.add_argument("--no-sandbox")
         self.options.add_argument("--disable-dev-shm-usage")
         self.timeout = timeout
-    """
-    def butorkellek(self, termek_neve):
-        driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=self.options)
-        butorkellek_url = f"https://butorkellek.eu/kereses?description=0&utm_source=iai_ads&utm_medium=google_shopping&gad_source=1&gad_campaignid=22402103487&gclid=Cj0KCQjww4TGBhCKARIsAFLXndQ-h0gI5LLAt5S8GS5YgmguS7Fq36fURGc7etdspSxbUuXa3B6zSGsaAg3SEALw_wcB&keyword={termek_neve}"
-        driver.get(butorkellek_url)
-        time.sleep(5)
 
-        products = []
-        items = driver.find_elements(By.CSS_SELECTOR, ".product-card-body")  # minden termék doboza
-        items = [items[0]] #Egyenlore csak a legelso termekkel probalom meg, ha tul nagy a talati hiba akkor ezen valtoztatok
-
-        for item in items:
-            try:
-                name = item.find_element(By.CSS_SELECTOR, ".product-card-title a").text.strip()
-            except:
-                name = ""
-
-            try:
-                url = item.find_element(By.CSS_SELECTOR, ".product-card-title a").get_attribute("href")
-            except:
-                url = ""
-
-            price_elements = item.find_elements(By.CSS_SELECTOR, ".product-price")
-
-            if price_elements:
-                price = price_elements[0].text.strip()
-            else:
-                # ha nincs normál ár, próbáljuk az akciósat
-                special_price_elements = item.find_elements(By.CSS_SELECTOR, ".product-price-special")
-                if special_price_elements:
-                    price = special_price_elements[0].text.strip()
-                else:
-                    # ha egyik sincs, akkor 0
-                    price = "0 ft"
-
-            products.append({
-                "nev": name,
-                "url": url,
-                "ar": price
-            })
-        driver.quit()
-
-        if not products:
-            print("Nem találtam meg a " + termek_neve + " nevű terméket!")
-
-        return products[0] #Majd ez is valtoztatni kell ha tobb termeket akarok visszaadni!
-    """
     def butorkellek(self, termek_neve: str, max_results: int = 1) -> dict | None:
         """
         Visszaadja a találatokból az elsőt (vagy max_results-ig listát könnyen bővíthető).
@@ -185,142 +141,6 @@ class Arukereso:
                 driver.quit()
             except Exception:
                 pass
-    '''
-    def karnis(self, termek_neve):
-        driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=self.options)
-        driver.get("https://butorszeged.hu/karnisbutor.hu/szakaruhaz/szabaszati-arlista/")
-
-        search_box = driver.find_element(By.CSS_SELECTOR, 'input[type="search"]')
-        search_box.send_keys(termek_neve)
-        time.sleep(3)
-
-        # Táblázat sorainak beolvasása
-        rows = driver.find_elements(By.CSS_SELECTOR, "#tablepress-2 tbody tr")
-        products = []
-
-        for row in rows:
-            cells = row.find_elements(By.TAG_NAME, "td")
-            adatok = [c.text.strip() for c in cells]
-
-            # Webshop link keresése a sorban (ha van)
-            try:
-                link_elem = row.find_element(By.CSS_SELECTOR, "a[href*='product']")
-                webshop_link = link_elem.get_attribute("href")
-            except:
-                webshop_link = None
-
-            print(adatok)
-            if adatok != ['Nincs a keresésnek megfelelő találat']:
-                products.append({
-                    "nev": termek_neve,
-                    "url": webshop_link,
-                    "ar": adatok[4][:-3]
-                })
-        driver.quit()
-        if not products:
-            print("Nem találtam meg a " + termek_neve + " nevű terméket!")
-            return ""
-        else:
-            return products[0] #Majd ez is valtoztatni kell ha tobb termeket akarok visszaadni!
-
-    def borovi(self, termek_neve):
-        # --- 1. data mappa az app-on kívül ---
-        base_dir = os.path.dirname(__file__)
-        project_root = os.path.abspath(os.path.join(base_dir, ".."))
-        data_dir = os.path.join(project_root, "data")
-        os.makedirs(data_dir, exist_ok=True)
-
-        pdf_path = os.path.join(data_dir, "borovi_ar.pdf")
-
-        # --- 2. PDF letöltése ---
-        response = requests.get("https://www.borovigerendahazkft.hu/tools/generate_pdf")
-        with open(pdf_path, "wb") as f:
-            f.write(response.content)
-
-        print(f"✅ PDF letöltve ide: {pdf_path}")
-
-        # --- 3. PDF megnyitás ---
-        doc = fitz.open(pdf_path)
-        oldalak_szovege = [page.get_text("text") for page in doc]
-
-        # --- 4. Megkeressük, melyik oldalon és hol van a kulcsszó ---
-        start_page = None
-        heading_rect = None
-
-        for i, page in enumerate(doc):
-            if termek_neve.lower() in oldalak_szovege[i].lower():
-                rects = page.search_for(termek_neve)
-                if rects:
-                    start_page = i  # 0-indexelt oldal
-                    heading_rect = rects[0]  # a cím téglalapja
-                    break
-
-        if start_page is None:
-            print(f"⚠️ Nem találtam '{termek_neve}' szöveget a PDF-ben.")
-            return {}
-
-        print(f"🔎 '{termek_neve}' megtalálva a(z) {start_page + 1}. oldalon")
-
-        talalatok = []
-        volt_mar_tabla = False
-        ures_oldal_ok = False  # ha már találtunk táblát, és utána jön 1 üres oldal → ott megállunk
-
-        # --- 5. Végigmegyünk a fejezet oldalain a címtől a PDF végéig ---
-        for page_idx in range(start_page, len(doc)):
-            page = doc[page_idx]
-            page_height = page.rect.height
-            page_width = page.rect.width
-
-            # Paraméterek Camelot-nak
-            kwargs = {
-                "pages": str(page_idx + 1),  # Camelot 1-indexelt
-                "flavor": "stream",  # ha nem jó, érdemes "lattice"-t is kipróbálni
-                "strip_text": "\n"
-            }
-
-            if page_idx == start_page:
-                # csak a CÍM ALATTI területet nézzük ezen az oldalon
-                y_top = heading_rect.y1  # fitz: felülről mért
-                # Camelot: (0,0) az oldal ALJÁN van → át kell fordítani
-                y1_camelot = 0
-                y2_camelot = page_height - y_top
-                area = f"0,{y1_camelot},{page_width},{y2_camelot}"
-                kwargs["table_areas"] = [area]
-
-            try:
-                tables = camelot.read_pdf(pdf_path, **kwargs)
-            except Exception as e:
-                print(f"⚠️ Hiba a(z) {page_idx + 1}. oldal feldolgozásakor: {e}")
-                break
-
-            page_dfk = [t.df for t in tables if not t.df.empty] if tables else []
-
-            if page_dfk:
-                # találtunk ezen az oldalon táblázatot
-                talalatok.extend(page_dfk)
-                volt_mar_tabla = True
-                ures_oldal_ok = False
-                print(f"✅ {len(page_dfk)} táblázat a(z) {page_idx + 1}. oldalon")
-            else:
-                # ezen az oldalon nincs táblázat
-                if volt_mar_tabla:
-                    # előtte már volt táblázat, most nincs → tekintsük a fejezet végét
-                    print(f"⛔ Nincs táblázat a(z) {page_idx + 1}. oldalon, megállunk itt.")
-                    break
-                else:
-                    # még nem volt egyetlen táblázat sem (pl. a címes oldal alja teljesen üres)
-                    print(f"ℹ️ Nincs táblázat a(z) {page_idx + 1}. oldalon, lépünk tovább.")
-                    continue
-
-        eredmenyek = {}
-        if talalatok:
-            print(f"✅ Összesen {len(talalatok)} táblázat beolvasva a(z) '{termek_neve}' fejezetből.")
-            eredmenyek[termek_neve] = talalatok
-        else:
-            print("⚠️ Nem talált táblázatot a fejezetben.")
-
-        return eredmenyek
-    '''
 
     def karnis(self, termek_neve: str) -> dict | None:
         """
@@ -411,143 +231,274 @@ class Arukereso:
             except Exception:
                 pass
 
-    def borovi(self, fejezet_cim: str, frissit: bool = False) -> dict | None:
-        """
-        Borovi PDF:
-          - megkeresi a fejezet címét (fejezet_cim)
-          - a cím ALATT indul
-          - beolvassa az összes táblázatot a KÖVETKEZŐ FEJEZETCÍMIG
-        Stabilabb fejezetcím-detekció: a fejezetcímeket a szöveg mérete/pozíciója alapján próbálja megfogni.
-        """
-        if not fejezet_cim or not fejezet_cim.strip():
-            print("⚠️ Üres fejezet cím.")
+    # Az Arukereso osztályban, a borovi() metódus ELEJÉN definiáld:
+
+
+
+    def borovi(self, termek_neve: str, frissit: bool = False) -> dict | None:
+        BOROVI_KATEGORIA_MAP = {
+            # PDF kategória neve (kisbetű, ékezet nélkül) → weboldal URL
+            "borovi fureszaru": "epitoipari-faaru",
+            "fureszaru": "epitoipari-faaru",
+            "epitoipari faaru": "epitoipari-faaru",
+            "asztalosipari faaru": "asztalosipari-faaru",
+            "ablakfriz": "friz",
+            "ajtofriz": "friz",
+            "friz": "friz",
+            "hajopadlo": "hajopadlo",
+            "lamberia": "lamberia",
+            "szegolec": "szegolec",
+            "borovi ajtoszegely": "szegolec",
+            "retegelt lemez": "retegelt-lemez",
+            "tablasitott falap": "tablasitott-falap-es-polc",
+            "tablasitott polc": "tablasitott-falap-es-polc",
+            "osb lap": "osb-lap",
+            "lepcso": "lepcso-es-kiegeszitoi",
+            "polc": "polc-es-vazszerkezet",
+            "vazszerkezet": "polc-es-vazszerkezet",
+            "szauna": "szauna-epites",
+            "gyalult faaru": "gyalult-faaru",
+            "terasz": "terasz-es-pergola",
+            "pergola": "terasz-es-pergola",
+            "zsindely": "zsindely-es-kiegeszitoi",
+            "fahaz burkolasa": "fahaz-burkolasa",
+            "kerites": "kerites",
+            "akac karo": "epitoipari-faaru/akac-karo-es-oszlop",
+            "feluletkezeles": "feluletkezeles",
+        }
+
+        BOROVI_BASE = "https://www.borovigerendahazkft.hu/termekek/"
+        try:
+            import pdfplumber
+        except ImportError:
+            print("⚠️  pdfplumber nincs telepítve")
             return None
 
-        # --- data mappa az app-on kívül ---
+        BOROVI_URL = "https://www.borovigerendahazkft.hu/"
+        PDF_URL = "https://www.borovigerendahazkft.hu/tools/generate_pdf"
+
         base_dir = os.path.dirname(__file__)
-        project_root = os.path.abspath(os.path.join(base_dir, ".."))
-        data_dir = os.path.join(project_root, "data")
-        os.makedirs(data_dir, exist_ok=True)
+        pdf_path = os.path.join(os.path.abspath(os.path.join(base_dir, "..")), "data", "borovi_ar.pdf")
+        os.makedirs(os.path.dirname(pdf_path), exist_ok=True)
 
-        pdf_path = os.path.join(data_dir, "borovi_ar.pdf")
-        url = "https://www.borovigerendahazkft.hu/tools/generate_pdf"
+        if frissit or not os.path.exists(pdf_path):
+            try:
+                r = requests.get(PDF_URL, timeout=30)
+                r.raise_for_status()
+                with open(pdf_path, "wb") as f:
+                    f.write(r.content)
+                for attr in ("_borovi_tabla", "_borovi_url_terkep"):
+                    if hasattr(self, attr):
+                        delattr(self, attr)
+            except Exception as e:
+                print(f"⚠️  PDF letöltési hiba: {e}")
+                return None
 
-        # --- letöltés (cache) ---
-        if frissit or (not os.path.exists(pdf_path)):
-            r = requests.get(url, timeout=30)
-            r.raise_for_status()
-            with open(pdf_path, "wb") as f:
-                f.write(r.content)
-            print(f"✅ PDF letöltve ide: {pdf_path}")
-        else:
-            print(f"ℹ️ PDF már létezik: {pdf_path}")
+        if not hasattr(self, "_borovi_tabla"):
+            self._borovi_tabla = self._borovi_pdf_parse(pdf_path, pdfplumber)
+            print(f"ℹ️  Borovi cache: {len(self._borovi_tabla)} tétel")
 
-        # --- PDF megnyitás ---
-        doc = fitz.open(pdf_path)
+        if not hasattr(self, "_borovi_url_terkep"):
+            self._borovi_url_terkep = self._borovi_url_terkep_epites()
 
-        # 1) Keressük meg a fejezet címet és a y-pozícióját
-        start_page = None
-        start_rect = None
-
-        for i in range(len(doc)):
-            page = doc[i]
-            rects = page.search_for(fejezet_cim)
-            if rects:
-                start_page = i
-                start_rect = rects[0]
-                break
-
-        if start_page is None:
-            print(f"⚠️ Nem találtam ilyen fejezetcímet a PDF-ben: '{fejezet_cim}'")
+        if not termek_neve or not termek_neve.strip():
             return None
 
-        # 2) Következő fejezetcím keresése:
-        #    Ehhez kigyűjtjük a "nagyobb" szöveg spaneket (jellemzően címsorok),
-        #    és megkeressük az első olyat, ami a start_page után jön.
-        next_page = None
-        next_y = None
+        ar_ft, kategoria = self._borovi_keres(termek_neve.strip(), self._borovi_tabla)
 
-        def heading_candidates(page: fitz.Page):
-            """Cím jelöltek: nagyobb betűméretű szöveg spane-k (heurisztika)."""
-            out = []
-            data = page.get_text("dict")
-            for block in data.get("blocks", []):
-                for line in block.get("lines", []):
-                    for span in line.get("spans", []):
-                        txt = (span.get("text") or "").strip()
-                        size = span.get("size", 0)
-                        bbox = span.get("bbox", None)  # (x0,y0,x1,y1)
-                        if not txt or not bbox:
+        if ar_ft is None:
+            print(f"❌ Borovi: nem találtam árat erre: '{termek_neve}'")
+            return {"nev": "", "url": BOROVI_URL, "ar": "0 Ft"}
+
+        def norm(s: str) -> str:
+            return unicodedata.normalize("NFKD", s).encode("ascii", "ignore").decode().lower().strip()
+
+        url = BOROVI_URL
+        if kategoria:
+            kat_norm = norm(kategoria)
+
+            # 1) Statikus térkép – pontos
+            if kat_norm in BOROVI_KATEGORIA_MAP:
+                url = BOROVI_BASE + BOROVI_KATEGORIA_MAP[kat_norm]
+
+            # 2) Statikus térkép – részleges szóegyezés
+            else:
+                for kulcs, utvonal in BOROVI_KATEGORIA_MAP.items():
+                    kulcs_szavak = set(kulcs.split())
+                    kat_szavak = set(kat_norm.split())
+                    if kulcs_szavak & kat_szavak:  # van közös szó
+                        url = BOROVI_BASE + utvonal
+                        break
+
+            # 3) Weboldal nav térkép fallback
+            if url == BOROVI_URL and hasattr(self, "_borovi_url_terkep"):
+                for link_szoveg, link_url in self._borovi_url_terkep.items():
+                    if norm(link_szoveg) in kat_norm or kat_norm in norm(link_szoveg):
+                        url = link_url
+                        break
+
+            print(f"ℹ️  Borovi URL: '{kategoria}' → {url}")
+
+        return {"nev": termek_neve, "url": url, "ar": ar_ft}
+
+    def _borovi_keres(self, keresett: str, tabla: dict) -> tuple[str | None, str]:
+        """Visszaad: (formázott_ár vagy None, kategória_név)"""
+        import difflib, unicodedata
+
+        def norm(s):
+            return unicodedata.normalize("NFKD", s).encode("ascii", "ignore").decode().lower()
+
+        STOP = {"a", "az", "es", "vagy", "cm", "mm", "db", "m", "ft"}
+
+        def szavak(s):
+            return {w for w in re.split(r'[\s/,;]+', norm(s)) if len(w) > 1 and w not in STOP}
+
+        k = keresett.lower().strip()
+        kn = norm(k)
+
+        def eredmeny(adat):
+            return self._borovi_format(adat["ar"]), adat.get("kategoria", "")
+
+        if k in tabla:                          return eredmeny(tabla[k])
+        for ku, ad in tabla.items():
+            if norm(ku) == kn:                  return eredmeny(ad)
+        for ku, ad in tabla.items():
+            kun = norm(ku)
+            if kun in kn or kn in kun:          return eredmeny(ad)
+
+        k_szavak = szavak(k)
+        legjobb, legjobb_pont = None, 0
+        for ku, ad in tabla.items():
+            kozos = k_szavak & szavak(ku)
+            if len(kozos) > legjobb_pont:
+                legjobb_pont, legjobb = len(kozos), ad
+        if legjobb_pont >= 1 and legjobb:       return eredmeny(legjobb)
+
+        kulcsok = list(tabla.keys())
+        t = difflib.get_close_matches(kn, [norm(kk) for kk in kulcsok], n=1, cutoff=0.45)
+        if t:
+            idx = [norm(kk) for kk in kulcsok].index(t[0])
+            return eredmeny(tabla[kulcsok[idx]])
+
+        return None, ""
+
+    # ── Segédfüggvények (a class belsejébe kerülnek) ─────────────────────
+
+    def _borovi_pdf_parse(self, pdf_path: str, pdfplumber) -> dict:
+        # {kulcs: {"ar": int, "kategoria": str}}
+        tabla: dict[str, dict] = {}
+
+        AR_RE = re.compile(
+            r'(\d{1,3}(?:[.\s]\d{3})*)'
+            r'\s*,\s*-?\s*ft'
+            r'(?:/\S*)?',
+            re.IGNORECASE,
+        )
+        SKIP = re.compile(
+            r'borovigerendahazkft\.hu|^\s*»|^\s*\('
+            r'|Méret\s+Bruttó|Fafaj\s+Megnevezés|Árlista\s+\d{4}'
+            r'|feltüntetett|Bruttó\s+ár\s*/|^\s*Megnevezés\b'
+            r'|A feltüntetett|^\s*$',
+            re.IGNORECASE,
+        )
+
+        aktualis_kategoria = ""
+
+        try:
+            with pdfplumber.open(pdf_path) as pdf:
+                for oldal in pdf.pages:
+                    text = oldal.extract_text() or ""
+                    for sor in text.splitlines():
+                        if SKIP.search(sor):
                             continue
-                        # heur: nagyobb betűméret + nem tipikus táblafejléc szavak
-                        low = txt.lower()
-                        taboo = ["fafaj", "minőség", "vastagság", "szélesség", "hossz", "ár", "ft", "mm"]
-                        if size >= 12 and not any(t in low for t in taboo):
-                            out.append((txt, size, bbox))
-            return out
 
-        # végig a start_page+1-től, keressük az első valós "cím-jelöltet"
-        for p in range(start_page + 1, len(doc)):
-            cands = heading_candidates(doc[p])
-            if cands:
-                # az első (legfelül levő) jelölt legyen a következő fejezet címe
-                cands.sort(key=lambda x: x[2][1])  # bbox y0 szerint
-                next_page = p
-                next_y = cands[0][2][1]
-                break
+                        m = AR_RE.search(sor)
+                        if m:
+                            ar_tiszta = re.sub(r'[^\d]', '', m.group(1))
+                            if not ar_tiszta:
+                                continue
+                            ar = int(ar_tiszta)
+                            if ar < 50:
+                                continue
 
-        # end_page: ha van next_page, akkor az előző oldal a vége, különben a PDF vége
-        end_page = (next_page - 1) if next_page is not None else (len(doc) - 1)
+                            termek = sor[:m.start()].strip().lower()
+                            if not termek:
+                                utana = re.sub(r'^[/\s]+', '', sor[m.end():].strip().lower())
+                                termek = utana if utana else aktualis_kategoria.lower()
 
-        print(f"🔎 Fejezet kezdete: {start_page+1}. oldal")
-        if next_page is not None:
-            print(f"⛔ Következő fejezet: {next_page+1}. oldal (y≈{next_y:.1f}) → itt megállunk")
-        else:
-            print("ℹ️ Nincs következő fejezetcím → PDF végéig olvasok")
+                            kat = aktualis_kategoria.lower()
+                            adat = {"ar": ar, "kategoria": aktualis_kategoria}
 
-        # 3) Táblázat beolvasás: start oldalon csak a cím alatti rész, többi oldalon teljes oldal
-        talalatok = []
+                            tabla[f"{kat} {termek}".strip()] = adat
+                            if termek:
+                                tabla[termek] = adat
+                            if kat and kat not in tabla:
+                                tabla[kat] = adat
+                        else:
+                            s = sor.strip()
+                            if (s and 2 < len(s) < 80
+                                    and not re.search(r'\d{3,}', s)
+                                    and not s[0].islower()
+                                    and not s.startswith(("Csak ", "Mér", "Vas", "Szé",
+                                                          "Hos", "Rög", "Fek", "Pol"))):
+                                aktualis_kategoria = s
+        except Exception as e:
+            print(f"⚠️  Borovi PDF parse hiba: {e}")
 
-        for page_idx in range(start_page, end_page + 1):
-            page = doc[page_idx]
-            w = page.rect.width
-            h = page.rect.height
+        return tabla
 
-            # először stream, ha 0 táblázat, próbál lattice
-            def read_tables(flavor: str, table_areas=None):
-                kwargs = {
-                    "pages": str(page_idx + 1),
-                    "flavor": flavor,
-                    "strip_text": "\n"
-                }
-                if table_areas:
-                    kwargs["table_areas"] = table_areas
-                return camelot.read_pdf(pdf_path, **kwargs)
+    def _borovi_url_terkep_epites(self) -> dict[str, str]:
+        """
+        Lescrapeli a Borovi weboldal navigációját,
+        visszaad {kategória_név_kisbetű: url} szótárt.
+        """
+        from bs4 import BeautifulSoup
+        import unicodedata
 
-            table_areas = None
-            if page_idx == start_page and start_rect is not None:
-                y_top = start_rect.y1
-                # camelot koordináta: alulról számol, ezért: y2 = h - y_top
-                area = f"0,0,{w},{h - y_top}"
-                table_areas = [area]
+        def norm(s: str) -> str:
+            return unicodedata.normalize("NFKD", s).encode("ascii", "ignore").decode().lower().strip()
 
-            tables = None
-            try:
-                tables = read_tables("stream", table_areas=table_areas)
-                if not tables or tables.n == 0:
-                    tables = read_tables("lattice", table_areas=table_areas)
-            except Exception as e:
-                print(f"⚠️ Hiba a(z) {page_idx+1}. oldalon: {e}")
-                continue
+        terkep: dict[str, str] = {}
+        try:
+            r = requests.get("https://www.borovigerendahazkft.hu/", timeout=15,
+                             headers={"User-Agent": "Mozilla/5.0"})
+            r.raise_for_status()
+            soup = BeautifulSoup(r.text, "html.parser")
 
-            if tables and tables.n > 0:
-                for t in tables:
-                    if t.df is not None and not t.df.empty:
-                        talalatok.append(t.df)
-                print(f"✅ {tables.n} tábla a(z) {page_idx+1}. oldalon")
+            # Minden <a> linket begyűjtünk ami a saját domainen van
+            for a in soup.find_all("a", href=True):
+                href = a["href"].strip()
+                szoveg = a.get_text(strip=True)
+                if not szoveg or len(szoveg) < 3:
+                    continue
 
-        if not talalatok:
-            print("⚠️ Nem találtam táblázatot ebben a fejezetben.")
-            return {"fejezet": fejezet_cim, "tablazatok": []}
+                # Abszolút URL
+                if href.startswith("/"):
+                    href = "https://www.borovigerendahazkft.hu" + href
+                if "borovigerendahazkft.hu" not in href:
+                    continue
 
-        return {"fejezet": fejezet_cim, "tablazatok": talalatok}
+                terkep[norm(szoveg)] = href
+
+            print(f"ℹ️  Borovi URL térkép: {len(terkep)} link")
+        except Exception as e:
+            print(f"⚠️  Borovi URL térkép hiba: {e}")
+
+        return terkep
+
+    def _borovi_ar_kinyeres(self, szoveg: str) -> int | None:
+        """'1 234,-Ft' → 1234  |  '12.345' → 12345  |  '0' → None"""
+        try:
+            csak_szam = re.sub(r'[^\d]', '', szoveg.split(",")[0].split("-")[0])
+            ertek = int(csak_szam)
+            return ertek if ertek > 0 else None
+        except Exception:
+            return None
+
+    def _norm(self, s: str) -> str:
+        return unicodedata.normalize("NFKD", s).encode("ascii", "ignore").decode().lower()
+
+    def _borovi_format(self, ar_int: int) -> str:
+        """1234 → '1.234 Ft'  (a meglévő egysegar = int(ar[:-3].replace('.','')) logikához)"""
+        return f"{ar_int:,} Ft".replace(",", ".")
+
