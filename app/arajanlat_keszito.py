@@ -171,8 +171,8 @@ class Arajanlat:
 
         sorok = [
             {
-                "Anyag": "Benzin",
-                "Szin": "",
+                "Anyag": "Üzemanyag",
+                "Szin": fogyasztas.get("uzemanyagfajta"),
                 "URL": utdij.nav_url,
                 "Mennyiseg": f"({fogyasztas.get("literek", 0)})*2*{toblettszorzo}",#fogyasztas.get("literek", 0) * 2 * toblettszorzo,
                 "Mertekegyseg": "l",

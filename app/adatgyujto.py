@@ -78,7 +78,7 @@ class Jotform:
         return df
 
 class Utdij_kalkulator:
-    def __init__(self, erkezesi_hely: str, uzemanyag_fajta="dizel", l_per_100km = 9, autoamortizacio_per_km = 50, indulasi_hely="Szeged, Selmeci utca 17."):
+    def __init__(self, erkezesi_hely: str, uzemanyag_fajta="Dízel", l_per_100km = 9, autoamortizacio_per_km = 50, indulasi_hely="Szeged, Selmeci utca 17."):
         self.uzemanyag_fajta = uzemanyag_fajta
         self.l_per_100km = l_per_100km
         self.hely_1 = indulasi_hely
@@ -153,10 +153,12 @@ class Utdij_kalkulator:
 
     def aktualis_benzin_ar(self):
         df = self.nav_uzemanyag_arlista()
-        if self.uzemanyag_fajta == "benzin":
-            return df["ÓlmozatlanmotorbenzinESZ-95(Ft/l)"].loc[0]
-        elif self.uzemanyag_fajta == "dizel":
-            return df["Gázolaj(Ft/l)"].loc[0]
+        if self.uzemanyag_fajta == "Benzin":
+            return df["ÓlmozatlanmotorbenzinESZ-95(védett ár)(Ft/l)"].loc[0]
+            #return df["ÓlmozatlanmotorbenzinESZ-95(Ft/l)"].loc[0]
+        elif self.uzemanyag_fajta == "Dízel":
+            return df["Gázolaj(védett ár)(Ft/l)"].loc[0]
+            #return df["Gázolaj(Ft/l)"].loc[0]
         else:
             print("HIBA!")
             return None
@@ -206,6 +208,7 @@ class Utdij_kalkulator:
             "erkezes": self.hely_2,
             "tavolsag_km": f"{rt["distance_km"]}+{plusztav}", #round(rt["distance_km"] + plusztav, 1),
             "menetido_perc": round(rt["duration_min"]),
+            "uzemanyagfajta": self.uzemanyag_fajta,
             "fogyasztas_l100": self.l_per_100km,
             "literar_huf": fogyasztas["literar_huf"],
             "literek": f"{fogyasztas["liter"]}+{fogyasztas_plusz["liter"]}",

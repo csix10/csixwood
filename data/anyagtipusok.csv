@@ -19,7 +19,7 @@ ragasztott gerenda;Ragasztott gerenda;Terfogat;1.5;Borovi
 hajopadlo;Hajópadló;Terulet;1.2;Borovi
 ajto friz;Ajtó friz;Osz_Hosz;1.5;Borovi
 HDF;Hátlap lemez;Terulet;1.1;Karnis
-MDF;MDF;Terulet;1.5;Karnis
+MDF;MDF;Terulet;1.1;Karnis
 fuggeszto;Függesztő;DB;1;Butorkellek
 fogantyu;Fogantyú;DB;1;Butorkellek
 kotoelem;Kötőelem;DB;1;Butorkellek
@@ -30,6 +30,7 @@ csavar;Csavar;DB;1;Butorkellek
 vallfa;Válfa tartó;DB;1;Butorkellek
 zar;Zár;DB;1;Butorkellek
 vilagitas;Világítás;DB;1;Butorkellek
+vizveto;Vízvető;DB;1;Butorkellek
 macskaajto;Macska ajtó;BD;1;-
 kilincs;Kilincs;BD;1;-
 sin;Sín;DB;1;Butorkellek
@@ -40,3 +41,5 @@ zsindely;Zsindely;Terulet;1.3;-
 XPS;XPS hőszigetelő;Terulet;1.5;-
 fiok;Fiók alkatrész;DB;1;Butorkellek
 kerek;Bútor kerék;DB;1;Butorkellek
+kapcsolo;Kapcsoló;DB;1;-
+konektor;Konektor;DB;1;-
